@@ -47,16 +47,44 @@ export default function Header() {
           />
         </div>
       </div>
-      <div className="bg-white py-3 px-9">
-        <nav className="flex justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="hover:underline">Home</Link>
-            <Link to="/about" className="hover:underline">About</Link>
-            <Link to="/contact" className="hover:underline">Contact us</Link>
+      <div className="bg-white shadow-sm px-6">
+        <nav className="flex justify-between items-center max-w-7xl mx-auto">
+          {/* Left links */}
+          <div className="flex gap-6">
+            <Link
+              to="/"
+              className="relative py-2 border-white border-b-[3px] hover:border-yellow-400 transition"
+            >
+              Home
+            </Link>
+            <Link
+              to="/about"
+              className="relative py-2 border-white border-b-[3px] hover:border-yellow-400 transition"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="relative py-2 border-white border-b-[3px] hover:border-yellow-400 transition"
+            >
+              Contact Us
+            </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="hover:underline">Login</Link>
-            <Link to="/signup" className="hover:underline">Signup</Link>
+
+          {/* Right links */}
+          <div className="flex gap-6">
+            <Link
+              to="/login"
+              className="relative py-2 border-white border-b-[3px] hover:border-yellow-400 transition"
+            >
+              Login
+            </Link>
+            <Link
+              to="/signup"
+              className="relative py-2 border-white border-b-[3px] hover:border-yellow-400 transition"
+            >
+              Signup
+            </Link>
           </div>
         </nav>
       </div>
