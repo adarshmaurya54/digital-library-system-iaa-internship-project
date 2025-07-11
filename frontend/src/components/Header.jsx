@@ -10,26 +10,32 @@ import { Link } from "react-router-dom";
 export default function Header() {
   return (
     <header className="flex flex-col">
-      <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between items-center px-10 py-3">
+      <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between items-center md:px-10 px-5 py-3">
 
-        <div className="flex items-end space-x-3">
-          <img
-            src={img_logo}
-            alt="IAA Logo"
-            className="h-11 w-auto"
-          />
-          <div className="text-white">
-            <h1 className="text-lg leading-4 font-semibold">Indian Aviation Academy</h1>
-            <p className="text-sm leading-4">Nurturing Aviation for the Future</p>
+        <div className="flex flex-col md:items-end space-y-3">
+          <div className="flex items-end space-x-3">
+            <img
+              src={img_logo}
+              alt="IAA Logo"
+              className="h-11"
+            />
+            <div className="text-white">
+              <h1 className="md:text-lg text-sm leading-4 font-semibold">Indian Aviation Academy</h1>
+              <p className="md:text-sm text-xs leading-4">Nurturing Aviation for the Future</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 ms-[-2px]">
+            <MdOutlineLocalLibrary className="inline text-3xl text-white" />
+            <p className="capitalize font-semibold text-white">digital library system</p>
           </div>
         </div>
 
-        <div className="text-white font-semibold text-lg flex flex-col items-center">
+        <div className="text-white font-semibold text-lg md:flex flex-col items-center hidden">
           <MdOutlineLocalLibrary className="inline text-3xl text-yellow-300" /> Digital Library System
         </div>
 
         {/* Right: Government, DGCA, AAI logos */}
-        <div className="flex items-center space-x-6">
+        <div className="md:flex items-center space-x-6 hidden">
           <img
             src={img_dgca}
             alt="Government of India Logo"
