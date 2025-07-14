@@ -1,32 +1,31 @@
-
-import { useState } from "react";
 import { FaAngleDown } from "react-icons/fa";
 
-// Props:
-// label: placeholder when nothing is selected (e.g., "Select Month")
-// options: array of options to display (e.g., ["All", "January", "February"])
-// selected: currently selected value
-// setSelected: setter to update selected value in parent
-
-export default function ReusableDropdown({ label, options, selected, setSelected }) {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
+export default function ReusableDropdown({
+    label,
+    options,
+    selected,
+    setSelected,
+    openDropdown,
+    setOpenDropdown
+}) {
+    const isOpen = openDropdown === label;
 
     const handleSelect = (value) => {
         setSelected(value);
-        setDropdownOpen(false);
+        setOpenDropdown(null); // close after select
     };
 
     return (
         <div className="relative w-full">
             <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => setOpenDropdown(isOpen ? null : label)}
                 className="inline-flex justify-between w-full capitalize h-full text-nowrap text-gray-500 items-center gap-2 bg-white px-4 py-2 rounded-xl border text-sm font-semibold"
             >
                 {selected === "" ? label : selected}
                 <FaAngleDown />
             </button>
 
-            {dropdownOpen && (
+            {isOpen && (
                 <div className="absolute shadow-[0_8px_30px_rgba(0,0,0,0.15)] right-0 mt-2 md:w-48 w-full overflow-hidden bg-white border rounded-xl z-10">
                     <div className="p-1 max-h-[200px] overflow-auto flex flex-col gap-1">
                         <div

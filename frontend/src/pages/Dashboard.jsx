@@ -56,7 +56,7 @@ const studyMaterials = [
 
 
 export default function Dashboard() {
-
+    const [openDropdown, setOpenDropdown] = useState(null);
     const [dateFilter, setDateFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState(""); // "PDF Document", etc.
     const [dateFilterLabel, setDateFilterLabel] = useState("All Time"); // For label control
@@ -78,12 +78,16 @@ export default function Dashboard() {
                             options={["PDF Document", "Video Document", "Quiz Document", "Word Document"]}
                             selected={typeFilter}
                             setSelected={setTypeFilter}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
 
                         <ReusableDropdown
                             label="All Time"
                             options={["Past 24 hours", "Past Week", "Past 2 Weeks", "Past Month"]}
                             selected={dateFilterLabel}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                             setSelected={(value) => {
                                 // Map label back to value for filtering
                                 let filterValue = "all";
