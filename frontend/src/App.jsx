@@ -8,6 +8,7 @@ import About from './pages/About';
 import bg from './assets/landing-bg.jpg';
 import Contact from './pages/Contact';
 import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
 
 function App() {
     return (
@@ -16,16 +17,17 @@ function App() {
 
             <div
                 style={{ backgroundImage: `url(${bg})` }}
-                className="relative min-h-fit py-10 bg-fixed bg-center flex-1 bg-no-repeat bg-cover"
+                className="relative min-h-fit bg-fixed bg-center flex-1 bg-no-repeat bg-cover"
             >
                 <div className="absolute top-0 left-0 bg-white/90 w-full h-full"></div>
 
-                <div className="relative flex justify-center items-center h-full">
+                <div className="relative h-full w-full">
                     <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/" element={<Home />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/signup" element={<Signup />} />
                         {/* add more routes here */}
                     </Routes>

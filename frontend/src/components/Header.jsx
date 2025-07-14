@@ -72,7 +72,7 @@ export default function Header() {
         <nav className="flex md:flex-row flex-col justify-between md:items-center max-w-7xl mx-auto">
           {/* Left links */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2">
-            <NavLink
+            {/* <NavLink
               onClick={() => setHamb(false)}
               to="/"
               className={linkClasses}
@@ -92,24 +92,38 @@ export default function Header() {
               className={linkClasses}
             >
               Contact Us
+            </NavLink> */}
+            <NavLink
+              onClick={() => setHamb(false)}
+              to="/dashboard"
+              className={linkClasses}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              onClick={() => setHamb(false)}
+              to="/"
+              className={linkClasses}
+            >
+              Go to home
             </NavLink>
           </div>
 
           {/* Right links */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2 mt-2 md:mt-0">
-            <NavLink
+            {/* <NavLink
               onClick={() => setHamb(false)}
               to="/login"
               className={linkClasses}
             >
               Login
-            </NavLink>
+            </NavLink> */}
             <NavLink
               onClick={() => setHamb(false)}
               to="/signup"
               className={linkClasses}
             >
-              Signup
+              Profile
             </NavLink>
           </div>
         </nav>
