@@ -7,11 +7,15 @@ import { Link } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { LiaTimesSolid } from "react-icons/lia";
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 
 
 export default function Header() {
   const [hamb, setHamb] = useState(false)
+  const linkClasses = ({ isActive }) =>
+    `relative py-2 w-fit border-b-[3px] transition 
+     ${isActive ? "border-yellow-400" : "border-transparent hover:border-yellow-400"}`;
   return (
     <header className="flex flex-col">
       <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 py-3">
@@ -34,8 +38,8 @@ export default function Header() {
           </div>
         </div>
 
-        <div  onClick={() => setHamb(true)}  className="md:hidden flex cursor-pointer">
-          <GiHamburgerMenu className="text-white text-2xl"/>
+        <div onClick={() => setHamb(true)} className="md:hidden flex cursor-pointer">
+          <GiHamburgerMenu className="text-white text-2xl" />
         </div>
 
         <div className="text-white font-semibold text-lg md:flex flex-col items-center hidden">
@@ -61,52 +65,66 @@ export default function Header() {
           />
         </div>
       </div>
-      <div className={`bg-white/90 backdrop-blur-md border-l border-gray-200 py-8 z-50 md:z-[unset] fixed md:relative top-0 right-0 md:h-auto h-full w-[80%] max-w-xs ${!hamb ? 'translate-x-full' : 'translate-x-0'} transition-transform duration-300 ease-in-out md:w-full shadow-2xl px-6 overflow-y-auto`}>
-        <div className="text-end">
-          <LiaTimesSolid onClick={() => setHamb(false)} className="inline cursor-pointer text-2xl"/>
+      <div className={`bg-white/90 backdrop-blur-md border-l border-gray-200 py-8 md:py-0 z-50 md:z-[unset] fixed md:relative top-0 right-0 md:h-auto h-full w-[80%] ${!hamb ? 'translate-x-full md:translate-x-0' : 'translate-x-0'} transition-transform duration-300 ease-in-out md:w-full shadow-2xl px-6 overflow-y-auto`}>
+        <div className="text-end md:hidden">
+          <LiaTimesSolid onClick={() => setHamb(false)} className="inline cursor-pointer text-2xl" />
         </div>
         <nav className="flex md:flex-row flex-col justify-between md:items-center max-w-7xl mx-auto">
           {/* Left links */}
-          <div className="flex md:flex-row flex-col md:gap-6">
-            <Link
+          <div className="flex md:flex-row flex-col md:gap-6 gap-2">
+            {/* <NavLink
               onClick={() => setHamb(false)}
               to="/"
-              className="relative py-2 w-fit border-transparent border-b-[3px] hover:border-yellow-400 transition"
+              className={linkClasses}
             >
               Home
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               onClick={() => setHamb(false)}
               to="/about"
-              className="relative py-2 w-fit border-transparent border-b-[3px] hover:border-yellow-400 transition"
+              className={linkClasses}
             >
               About
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               onClick={() => setHamb(false)}
               to="/contact"
-              className="relative py-2 w-fit border-transparent border-b-[3px] hover:border-yellow-400 transition"
+              className={linkClasses}
             >
               Contact Us
-            </Link>
+            </NavLink> */}
+            <NavLink
+              onClick={() => setHamb(false)}
+              to="/dashboard"
+              className={linkClasses}
+            >
+              Dashboard
+            </NavLink>
+            <NavLink
+              onClick={() => setHamb(false)}
+              to="/"
+              className={linkClasses}
+            >
+              Go to home
+            </NavLink>
           </div>
 
           {/* Right links */}
-          <div className="flex md:flex-row flex-col md:gap-6">
-            <Link
+          <div className="flex md:flex-row flex-col md:gap-6 gap-2 mt-2 md:mt-0">
+            {/* <NavLink
               onClick={() => setHamb(false)}
               to="/login"
-              className="relative py-2 w-fit border-transparent border-b-[3px] hover:border-yellow-400 transition"
+              className={linkClasses}
             >
               Login
-            </Link>
-            <Link
+            </NavLink> */}
+            <NavLink
               onClick={() => setHamb(false)}
               to="/signup"
-              className="relative py-2 w-fit border-transparent border-b-[3px] hover:border-yellow-400 transition"
+              className={linkClasses}
             >
-              Signup
-            </Link>
+              Profile
+            </NavLink>
           </div>
         </nav>
       </div>
