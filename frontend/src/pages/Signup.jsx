@@ -13,7 +13,7 @@ function Signup() {
         lastName: '',
         email: '',
         password: '',
-        confirmPassword: '',
+        cPassword: '',
         role: '',
     });
 
@@ -30,10 +30,10 @@ function Signup() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const { firstName, lastName, email, password, confirmPassword, role } = formData;
+        const { firstName, lastName, email, password, cPassword, role } = formData;
 
         // Check for empty fields
-        if (!firstName || !lastName || !email || !password || !confirmPassword || !role) {
+        if (!firstName || !lastName || !email || !password || !cPassword || !role) {
             toast.error('All fields are required!');
             return;
         }
@@ -45,13 +45,13 @@ function Signup() {
         }
 
         // Password match check
-        if (password !== confirmPassword) {
+        if (password !== cPassword) {
             toast.error('Passwords do not match!');
             return;
         }
 
         const payload = {
-            firstName, lastName, email, password, role
+            firstName, lastName, email, password, cPassword, role
         };
 
         dispatch(userRegister(payload)).then((res) => {
@@ -133,12 +133,12 @@ function Signup() {
                         />
                     </div>
                     <div className="md:col-span-1">
-                        <label htmlFor="confirmPassword" className="block text-gray-600 text-sm mb-1">Confirm Password</label>
+                        <label htmlFor="cPassword" className="block text-gray-600 text-sm mb-1">Confirm Password</label>
                         <input
                             type="password"
-                            id="confirmPassword"
+                            id="cPassword"
                             placeholder="Confirm your password"
-                            value={formData.confirmPassword}
+                            value={formData.cPassword}
                             onChange={handleChange}
                             className="w-full h-11 px-3 rounded-xl border border-gray-300 focus:ring-2 ring-[#002F6C] outline-none transition"
                         />
