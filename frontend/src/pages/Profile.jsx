@@ -9,7 +9,7 @@ const Profile = () => {
       
       {/* Profile Pic */}
       <div className="flex-shrink-0">
-        <div className="w-40 h-40 rounded-full border-4 border-blue-600 overflow-hidden shadow-md">
+        <div className="w-40 h-40 rounded-full overflow-hidden">
           <img
             src='https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
             alt="Profile"
