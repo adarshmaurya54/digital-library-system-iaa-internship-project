@@ -9,6 +9,7 @@ import bg from './assets/landing-bg.jpg';
 import Contact from './pages/Contact';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 
 function App() {
     return (
@@ -29,6 +30,7 @@ function App() {
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/signup" element={<Signup />} />
+                        <Route path="/profile" element={<Profile />} />
                         {/* add more routes here */}
                     </Routes>
                 </div>

@@ -3,19 +3,32 @@ import img_dgca from "../assets/img_dgca.png"
 import img_logo from "../assets/img_logo.png"
 import img_bcab from "../assets/img_bcab.png"
 import img_airports from "../assets/img_airports.png"
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { LiaTimesSolid } from "react-icons/lia";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/features/auth/authSlice";
+import toast from "react-hot-toast";
 
 
 
 export default function Header() {
+  const { user } = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [hamb, setHamb] = useState(false)
   const linkClasses = ({ isActive }) =>
     `relative py-2 w-fit border-b-[3px] transition 
      ${isActive ? "border-yellow-400" : "border-transparent hover:border-yellow-400"}`;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Remove token
+    dispatch(logout()); // Dispatch logout action to set user to null
+    toast.success("Logout successful");
+    navigate('/login')
+  };
   return (
     <header className="flex flex-col">
       <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 py-3">
@@ -52,16 +65,19 @@ export default function Header() {
             src={img_dgca}
             alt="Government of India Logo"
             className="h-20 w-auto"
+            title="DGCA"
           />
           <img
             src={img_bcab}
-            alt="DGCA Logo"
+            alt="BCAB Logo"
             className="h-20 w-auto"
+            title="BCAB"
           />
           <img
             src={img_airports}
             alt="AAI Logo"
             className="h-20 w-auto"
+            title="Airport Authority of India"
           />
         </div>
       </div>
@@ -72,59 +88,82 @@ export default function Header() {
         <nav className="flex md:flex-row flex-col justify-between md:items-center max-w-7xl mx-auto">
           {/* Left links */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2">
-            {/* <NavLink
-              onClick={() => setHamb(false)}
-              to="/"
-              className={linkClasses}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              onClick={() => setHamb(false)}
-              to="/about"
-              className={linkClasses}
-            >
-              About
-            </NavLink>
-            <NavLink
-              onClick={() => setHamb(false)}
-              to="/contact"
-              className={linkClasses}
-            >
-              Contact Us
-            </NavLink> */}
-            <NavLink
-              onClick={() => setHamb(false)}
-              to="/dashboard"
-              className={linkClasses}
-            >
-              Dashboard
-            </NavLink>
-            <NavLink
-              onClick={() => setHamb(false)}
-              to="/"
-              className={linkClasses}
-            >
-              Go to home
-            </NavLink>
+            {user?.id ? <>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/dashboard"
+                className={linkClasses}
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/"
+                className={linkClasses}
+              >
+                Go to home
+              </NavLink>
+            </> : <>
+
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/"
+                className={linkClasses}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/about"
+                className={linkClasses}
+              >
+                About
+              </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/contact"
+                className={linkClasses}
+              >
+                Contact Us
+              </NavLink>
+            </>}
+
           </div>
 
           {/* Right links */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2 mt-2 md:mt-0">
-            {/* <NavLink
-              onClick={() => setHamb(false)}
-              to="/login"
-              className={linkClasses}
-            >
-              Login
-            </NavLink> */}
-            <NavLink
-              onClick={() => setHamb(false)}
-              to="/signup"
-              className={linkClasses}
-            >
-              Profile
-            </NavLink>
+            {user?.id ? <>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/profile"
+                className={linkClasses}
+              >
+                Profile
+              </NavLink>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={linkClasses}
+              >
+                Logout
+              </button>
+            </> : <>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/login"
+                className={linkClasses}
+              >
+                Login
+              </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/signup"
+                className={linkClasses}
+              >
+                Signup
+              </NavLink>
+            </>}
+
           </div>
         </nav>
       </div>
