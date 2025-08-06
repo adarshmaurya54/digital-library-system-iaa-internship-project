@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BookOpen, Search, Funnel, Calendar, Download, Bookmark, Upload, User, Settings, FileText, Video, ClipboardList, File } from "lucide-react";
 import ReusableDropdown from "../components/ReusableDropdown";
+import { useSelector } from "react-redux";
 
 const studyMaterials = [
     {
@@ -60,12 +61,13 @@ export default function Dashboard() {
     const [dateFilter, setDateFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState(""); // "PDF Document", etc.
     const [dateFilterLabel, setDateFilterLabel] = useState("All Time"); // For label control
+    const {user} = useSelector(state => state.auth)
     return (
         <div className="flex md:flex-row flex-col">
             {/* Sidebar */}
             <aside className="md:w-64 bg-white md:h-screen shadow-md p-4">
                 <div className="border-b font-semibold pb-3 mb-6 text-sm text-nowrap md:block hidden">
-                    <p>Welcome, Adarsh Maurya!</p>
+                    <p>Welcome, {user?.first_name + " " + user?.last_name}!</p>
                 </div>
                 <div className="space-y-3">
                     <div className="flex bg-blue-50 cursor-pointer w-fit md:w-auto px-4 py-2 rounded-full text-sm items-center md:justify-center gap-2 font-medium md:mb-2">

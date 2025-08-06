@@ -11,14 +11,31 @@ import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/features/auth/authSlice";
 import toast from "react-hot-toast";
+import { RxCross2 } from "react-icons/rx";
 
 
 
 export default function Header() {
+  const [uploadModel, setUploadModel] = useState(false)
   const { user } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [hamb, setHamb] = useState(false)
+  const [fileData, setFileData] = useState(null);
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [tags, setTags] = useState('')
+  const [category, setCategory] = useState('')
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileData({
+        name: file.name,
+        size: (file.size / 1024).toFixed(2) + ' KB'
+      });
+    }
+  };
   const linkClasses = ({ isActive }) =>
     `relative py-2 w-fit border-b-[3px] transition 
      ${isActive ? "border-yellow-400" : "border-transparent hover:border-yellow-400"}`;
@@ -29,6 +46,36 @@ export default function Header() {
     toast.success("Logout successful");
     navigate('/login')
   };
+
+  const handleUpload = () => {
+    setHamb(false)
+    setUploadModel(true)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Collect form data
+    const formData = {
+      title,
+      description,
+      tags,
+      category,
+      file: fileData,
+    };
+    // Show in alert
+    alert(`
+    Title: ${formData.title}
+    Description: ${formData.description}
+    Tags: ${formData.tags}
+    File Name: ${formData.file?.name || 'No file'}
+    File Size: ${formData.file?.size || 'N/A'}
+  `);
+
+    // Show in console
+    console.log("Uploaded Material Data:", formData);
+  };
+
   return (
     <header className="flex flex-col">
       <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 py-3">
@@ -91,17 +138,17 @@ export default function Header() {
             {user?.id ? <>
               <NavLink
                 onClick={() => setHamb(false)}
+                to="/"
+                className={linkClasses}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
                 to="/dashboard"
                 className={linkClasses}
               >
                 Dashboard
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/"
-                className={linkClasses}
-              >
-                Go to home
               </NavLink>
             </> : <>
 
@@ -140,6 +187,12 @@ export default function Header() {
               >
                 Profile
               </NavLink>
+              {user.role == 'Faculty' && <button
+                onClick={handleUpload}
+                className={linkClasses}
+              >
+                Upload
+              </button>}
               <button
                 type="button"
                 onClick={handleLogout}
@@ -167,6 +220,144 @@ export default function Header() {
           </div>
         </nav>
       </div>
+      {/* {uploadModel && document.body.className'overflow-hidden'} */}
+      {uploadModel &&
+        <div className="fixed inset-0 overflow-y-auto bg-black backdrop-blur-sm h-full bg-opacity-40 z-50 flex justify-center items-start py-10">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-[50%] overflow-y-auto relative">
+
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Upload Study Material</h2>
+              <RxCross2
+                onClick={() => setUploadModel(false)}
+                className="text-gray-600 hover:text-red-500 cursor-pointer text-3xl absolute top-4 right-5"
+              />
+            </div>
+
+            {/* Form in 2 columns */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-1 gap-6 items-center justify-center text-gray-700">
+
+              {/* Left Column */}
+              <div className="space-y-6">
+                {/* Title Input */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Enter title"
+                    className="w-full p-3 rounded-xl border border-gray-300 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
+                  <textarea
+                    name="description"
+                    placeholder="Write a short description..."
+                    className="w-full p-3 rounded-xl border border-gray-300 shadow-sm bg-white h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Tags</label>
+                  <input
+                    type="text"
+                    name="tags"
+                    placeholder="e.g. weather, systems"
+                    className="w-full p-3 rounded-xl border border-gray-300 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Category</label>
+                  <select
+                    name="category"
+                    className="w-full p-3 rounded-xl border border-gray-300 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    required
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Aerodynamics">Aerodynamics</option>
+                    <option value="Aircraft Systems">Aircraft Systems</option>
+                    <option value="Flight Maneuvers">Flight Maneuvers</option>
+                    <option value="Aviation Weather">Aviation Weather</option>
+                    <option value="Air Law">Air Law</option>
+                    <option value="Navigation">Navigation</option>
+                    <option value="Radio Communication">Radio Communication</option>
+                    <option value="Human Factors">Human Factors</option>
+                  </select>
+                </div>
+              </div>
+
+
+              {/* Right Column */}
+              <div className="space-y-6">
+                <div className="md:w-[100%] md:py-3 md:mt-0 mt-10">
+                  <div className="w-full">
+                    <div className="relative transition-all duration-500 group border-[3px] border-dashed border-gray-300 rounded-3xl p-6 hover:shadow-lg hover:border-black">
+                      {
+                        fileData ? (
+                          <div className="text-center">
+                            <p className="text-black font-semibold text-lg">{fileData.name}</p>
+                            <p className="text-gray-500 text-sm">{fileData.size}</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center space-y-3 text-center">
+                            <img className="mx-auto h-12 w-12" src="https://www.svgrepo.com/show/357902/image-upload.svg" alt="" />
+                            <span className="block text-gray-600 font-semibold text-lg group-hover:text-black">
+                              Drag & drop your files here
+                            </span>
+                            <span className="block text-gray-500 font-normal text-sm">
+                              or click to upload a file (.pdf, .docx, .pptx, .mp4)
+                            </span>
+                          </div>
+                        )
+                      }
+                      <input
+                        name="file"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        type="file"
+                        accept=".pdf,.docx,.pptx,.mp4"
+                        required
+                        onChange={handleFileChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    type="submit"
+                    className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
+                  >
+                    Upload Material
+                  </button>
+                  <button
+                    type="reset"
+                    onClick={() => setFileData(null)}
+                    className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
     </header>
   );
 }
