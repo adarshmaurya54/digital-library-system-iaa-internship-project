@@ -3,28 +3,26 @@ import { useSelector } from 'react-redux';
 
 const Profile = () => {
   const { user } = useSelector((state) => state.auth)
-
+  if (!user) return <div className="text-center mt-10">Loading...</div>;
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-xl flex flex-col md:flex-row items-center md:items-start gap-8">
-      
-      {/* Profile Pic */}
-      <div className="flex-shrink-0">
-        <div className="w-40 h-40 rounded-full overflow-hidden">
-          <img
-            src='https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
+    <div className="flex justify-center items-center md:py-5">
+      <div className="bg-white p-8 md:rounded-2xl md:shadow-2xl w-full max-w-md text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="w-24 h-24 bg-indigo-500 text-white rounded-full flex items-center justify-center text-3xl font-bold">
+            {user.first_name[0]}{user.last_name[0]}
+          </div>
         </div>
-      </div>
 
-      {/* User Details */}
-      <div className="flex-1 w-full">
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">Profile Details</h2>
-        <div className="space-y-3">
-          <p className="text-lg text-gray-700"><span className="font-semibold">Name:</span> {user?.first_name} {user?.last_name}</p>
-          <p className="text-lg text-gray-700"><span className="font-semibold">Email:</span> {user?.email}</p>
-          <p className="text-lg text-gray-700"><span className="font-semibold">Role:</span> {user?.role}</p>
+        <h2 className="text-2xl font-bold">{user.first_name} {user.last_name}</h2>
+        <p className="text-gray-500  leading-[3px] text-sm">{user.email}</p>
+
+        <div className="mt-4">
+          <span
+            className={`inline-block px-4 py-1 rounded-full text-white text-sm font-medium ${user.role === 'Faculty' ? 'bg-green-500' : 'bg-blue-500'
+              }`}
+          >
+            {user.role}
+          </span>
         </div>
       </div>
     </div>

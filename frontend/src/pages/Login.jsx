@@ -10,7 +10,8 @@ function Login() {
     const navigate = useNavigate()
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        loginRole: 'trainee'
     })
 
     const handleChange = (e) => {
@@ -36,21 +37,25 @@ function Login() {
             toast.error('Please enter a valid email address!');
             return;
         }
-        const payload = {
-            email, password
-        };
 
-        dispatch(userLogin(payload)).then((res) => {
+        dispatch(userLogin(formData)).then((res) => {
             if (res.payload?.success) {
-                navigate("/profile"); 
+                navigate("/dashboard");
             }
         });
     };
 
+    const toggleLoginRole = (role) => {
+        setFormData((prev) => ({
+            ...prev,
+            loginRole: role,
+        }))
+    };
+
 
     return (
-        <div className="md:py-4">
-            <div className="relative flex flex-col p-6 bg-white md:rounded-2xl shadow-xl border border-gray-200 md:max-w-sm w-full mx-auto">
+        <div className="md:py-4 h-full">
+            <div className="relative flex flex-col p-6 md:h-auto h-full bg-white md:rounded-2xl shadow-xl border border-gray-200 md:max-w-sm w-full mx-auto">
                 <div className="text-2xl font-bold mb-2 text-[#002F6C] text-center">
                     Welcome back !
                 </div>
@@ -58,6 +63,47 @@ function Login() {
                     Log in to your account
                 </div>
                 <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+                    <div className="rounded-2xl p-1 border border-black/10 mt-3">
+                        <div className="relative w-full flex items-center overflow-hidden">
+                            {/* Sliding background highlight */}
+                            <div
+                                className={`absolute z-10 top-0 transition-all duration-500 bg-[#002F6C] rounded-xl h-full w-1/3 ${formData.loginRole === "admin"
+                                    ? "left-[66.6%]"
+                                    : formData.loginRole === "faculty"
+                                        ? "left-[33.3%]"
+                                        : "left-[0%]"
+                                    }`}
+                            ></div>
+
+                            {/* Trainee Button */}
+                            <div
+                                onClick={() => toggleLoginRole("trainee")}
+                                className={`w-1/3 z-20 text-center p-2 cursor-pointer transition-colors duration-500 rounded-xl ${formData.loginRole === "trainee" ? "text-white" : "text-black"
+                                    }`}
+                            >
+                                Trainee
+                            </div>
+
+                            {/* Faculty Button */}
+                            <div
+                                onClick={() => toggleLoginRole("faculty")}
+                                className={`w-1/3 z-20 text-center cursor-pointer transition-colors duration-500 rounded-xl ${formData.loginRole === "faculty" ? "text-white" : "text-black"
+                                    }`}
+                            >
+                                Faculty
+                            </div>
+
+                            {/* Admin Button */}
+                            <div
+                                onClick={() => toggleLoginRole("admin")}
+                                className={`w-1/3 z-20 text-center cursor-pointer transition-colors duration-500 rounded-xl ${formData.loginRole === "admin" ? "text-white" : "text-black"
+                                    }`}
+                            >
+                                Admin
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <label htmlFor="email" className="block text-gray-600 text-sm mb-1">Email</label>
                         <input

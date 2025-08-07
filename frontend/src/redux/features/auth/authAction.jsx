@@ -8,14 +8,14 @@ import axios from "axios";
 // login
 export const userLogin = createAsyncThunk(
     "auth/login",
-    async ({ email, password }, { rejectWithValue }) => {
+    async (formData, { rejectWithValue }) => {
         const toastId = toast.loading("Please wait...");
         try {
-            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}auth/user/login/`, { email, password });
-
+            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}auth/user/login/`, formData);
+            console.log(data.user)
             // storing the token that generated when we request to login api
             if (data.success) {
-                localStorage.setItem("token", data.token); // data.token, we getting this from the authController.js file from the loginController.
+                localStorage.setItem("token", data.user.token); // data.token, we getting this from the authController.js file from the loginController.
                 toast.success(data.message, { id: toastId });
             } else {
                 toast.error(data.message, { id: toastId });
@@ -77,10 +77,11 @@ export const getCurrentUser = createAsyncThunk(
     "auth/getCurrentUser",
     async (_, { rejectWithValue }) => {
         try {
-            const res = await API.get("/auth/current-user");
+            const res = await API.get("/auth/user/profile/");
             if (res?.data) {
                 return res.data; // Return only user data
             } else {
+                localStorage.setItem('token', null)
                 return rejectWithValue("Failed to fetch user data");
             }
         } catch (error) {

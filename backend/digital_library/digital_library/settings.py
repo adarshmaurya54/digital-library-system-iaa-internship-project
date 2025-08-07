@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'corsheaders',
-    'auth_dls'
+    'faculty_dls',
+    'materials',
+    'auth_dls',
 ]
 
 MIDDLEWARE = [
@@ -119,12 +121,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
-MEDIA_URL = "/images/"
-STATICFILES_DIRS = [
-    BASE_DIR / 'static'
-]
-MEDIA_ROOT = 'static/images/'
+# Static files (for CSS, JS, images used in templates)
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Media files (for uploaded files like PDFs, docs, etc.)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -136,6 +139,7 @@ AUTH_USER_MODEL = 'auth_dls.User'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://192.168.1.7:5173",
 ]
 
 SIMPLE_JWT = {
@@ -194,3 +198,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',  # Default unless overridden
     ],
 }
+
+
+ALLOWED_HOSTS = ['*']

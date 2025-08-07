@@ -17,6 +17,7 @@ from django.conf import settings
 from django.views.generic import View
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def getRoutes(request):
     return Response("Hello Adarsh")
 
@@ -90,6 +91,7 @@ def loginUser(request):
     try:
         email = data.get('email')
         password = data.get('password')
+        role = data.get('loginRole')
 
         user = User.objects.filter(email=email).first()
 
@@ -99,6 +101,9 @@ def loginUser(request):
         if not user.check_password(password):
             return Response({'success': False, 'message': 'Incorrect password.'}, status=400)
 
+        if user.role.lower() != role.lower():
+            return Response({'success': False, 'message': "User role doesn't match"}, status=400)
+        
         if not user.is_active:
             return Response({'success': False, 'message': 'Account not activated. Check your email.'}, status=400)
 
@@ -117,6 +122,8 @@ def getCurrentUser(request):
         "success": True,
         "user": serializer.data
     })
+
+
 
 
 class ActivateAccountView(View):

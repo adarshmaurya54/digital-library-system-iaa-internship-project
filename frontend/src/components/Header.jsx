@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/features/auth/authSlice";
 import toast from "react-hot-toast";
 import { RxCross2 } from "react-icons/rx";
+import { API } from "../services/apiService";
 
 
 
@@ -22,6 +23,7 @@ export default function Header() {
   const navigate = useNavigate()
   const [hamb, setHamb] = useState(false)
   const [fileData, setFileData] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState('')
@@ -30,6 +32,7 @@ export default function Header() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setUploadedFile(file)
       setFileData({
         name: file.name,
         size: (file.size / 1024).toFixed(2) + ' KB'
@@ -52,29 +55,48 @@ export default function Header() {
     setUploadModel(true)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Collect form data
-    const formData = {
-      title,
-      description,
-      tags,
-      category,
-      file: fileData,
-    };
-    // Show in alert
-    alert(`
-    Title: ${formData.title}
-    Description: ${formData.description}
-    Tags: ${formData.tags}
-    File Name: ${formData.file?.name || 'No file'}
-    File Size: ${formData.file?.size || 'N/A'}
-  `);
+    // Create FormData object
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("tags", tags);
+    formData.append("category", category);
+    formData.append("file", uploadedFile);
 
-    // Show in console
-    console.log("Uploaded Material Data:", formData);
+    const toastId = toast.loading("Uploading...")
+
+    // Send to Django backend
+    try {
+      const { data } = await API.post("materials/upload/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (data.success) {
+        toast.success(data.message, { id: toastId })
+      }
+
+
+    } catch (error) {
+      // If error response exists, show the message(s)
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+
+        Object.entries(errorData).forEach(([key, value]) => {
+          toast.error(`${key}: ${Array.isArray(value) ? value.join(', ') : value}`, { id: toastId });
+        });
+      } else {
+        toast.error("Upload failed. Please try again.", { id: toastId });
+      }
+
+      console.error("Upload failed:", error);
+    }
   };
+
 
   return (
     <header className="flex flex-col">
@@ -189,14 +211,14 @@ export default function Header() {
               </NavLink>
               {user.role == 'Faculty' && <button
                 onClick={handleUpload}
-                className={linkClasses}
+                className={linkClasses + ' border-transparent hover:border-yellow-400'}
               >
                 Upload
               </button>}
               <button
                 type="button"
                 onClick={handleLogout}
-                className={linkClasses}
+                className={linkClasses + ' border-transparent hover:border-yellow-400'}
               >
                 Logout
               </button>
@@ -222,16 +244,16 @@ export default function Header() {
       </div>
       {/* {uploadModel && document.body.className'overflow-hidden'} */}
       {uploadModel &&
-        <div className="fixed inset-0 overflow-y-auto bg-black backdrop-blur-sm h-full bg-opacity-40 z-50 flex justify-center items-start py-10">
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-[50%] overflow-y-auto relative">
+        <div className="fixed inset-0 overflow-y-auto bg-black md:backdrop-blur-sm h-full bg-opacity-40 z-50 flex justify-center items-start md:py-10">
+          <div className="bg-white p-6 md:rounded-2xl shadow-xl md:w-[50%] w-full overflow-y-auto relative">
 
 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Upload Study Material</h2>
+              <h2 className="md:text-2xl text-xl font-bold text-gray-800">Upload Study Material</h2>
               <RxCross2
                 onClick={() => setUploadModel(false)}
-                className="text-gray-600 hover:text-red-500 cursor-pointer text-3xl absolute top-4 right-5"
+                className="text-gray-600 hover:text-red-500 cursor-pointer md:text-3xl text-2xl"
               />
             </div>
 
@@ -343,7 +365,7 @@ export default function Header() {
                     type="submit"
                     className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
                   >
-                    Upload Material
+                    Upload
                   </button>
                   <button
                     type="reset"
