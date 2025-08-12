@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BookOpen, Search, Funnel, Calendar, Download, Bookmark, Upload, User, Settings, FileText, Video, ClipboardList, File } from "lucide-react";
 import ReusableDropdown from "../components/ReusableDropdown";
 import { useSelector } from "react-redux";
+import { API } from "../services/apiService";
 
 const studyMaterials = [
     {
@@ -62,6 +63,22 @@ export default function Dashboard() {
     const [typeFilter, setTypeFilter] = useState(""); // "PDF Document", etc.
     const [dateFilterLabel, setDateFilterLabel] = useState("All Time"); // For label control
     const {user} = useSelector(state => state.auth)
+
+    const [materials, setMaterials] = useState(null)
+
+    useEffect(() => {
+        const getAllMaterials = async() => {
+            try{
+                const {data} = await API.get('materials/')
+                setMaterials(data)
+            }catch(e) {
+                console.error(e)
+            }
+        }
+
+        getAllMaterials()
+    }, [])
+
     return (
         <div className="flex md:flex-row flex-col">
             {/* Sidebar */}
@@ -131,13 +148,12 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {studyMaterials.map((item, index) => (
+                    {materials?.map((item, index) => (
                         <div key={index} className="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
                             <div className="flex items-start gap-2 mb-2">
                                 <div className="w-[15%]">
-                                    {item.type.includes("Video") ? <Video className="text-[#0257a7]" /> :
-                                        item.type.includes("Word") ? <ClipboardList className="text-[#0257a7]" /> :
-                                            item.type.includes("Quiz") ? <ClipboardList className="text-[#0257a7]" /> :
+                                    {item.file_type === 'mp4' ? <Video className="text-[#0257a7]" /> :
+                                        item.file_type === 'docx' ? <ClipboardList className="text-[#0257a7]" /> :
                                                 <File className="text-[#0257a7]" />}
                                 </div>
                                 <h2 className="font-semibold w-[85%] text-lg truncate">{item.title}</h2>
@@ -145,7 +161,7 @@ export default function Dashboard() {
                             <p className="text-sm text-gray-600 mb-2 truncate">{item.description}</p>
                             <div className="flex flex-wrap gap-2">
                                 {item.tags.map((tag, i) => (
-                                    <span key={i} className="text-xs bg-blue-50 text-[#0257a7] px-2 py-1 rounded-full">{tag}</span>
+                                    <span key={i} className="text-xs bg-blue-50 text-[#0257a7] px-2 py-1 rounded-full capitalize">{tag}</span>
                                 ))}
                             </div>
                         </div>

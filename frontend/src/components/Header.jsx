@@ -6,17 +6,21 @@ import img_airports from "../assets/img_airports.png"
 import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { LiaTimesSolid } from "react-icons/lia";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/features/auth/authSlice";
 import toast from "react-hot-toast";
 import { RxCross2 } from "react-icons/rx";
 import { API } from "../services/apiService";
+import { FiMinimize2 } from "react-icons/fi";
+
+
 
 
 
 export default function Header() {
+  const formRef = useRef(null);
   const [uploadModel, setUploadModel] = useState(false)
   const { user } = useSelector((state) => state.auth)
   const dispatch = useDispatch()
@@ -28,6 +32,7 @@ export default function Header() {
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState('')
   const [category, setCategory] = useState('')
+  const [formEmpty, setFormEmpty] = useState(true)
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -55,8 +60,29 @@ export default function Header() {
     setUploadModel(true)
   }
 
+  const handleModelReset = () => {
+    setTitle('')
+    setDescription('')
+    setCategory('')
+    setTags('')
+    setUploadedFile(null)
+  }
+
+  const isFormEmpty = () => {
+    if (title?.trim() || description?.trim() || tags?.trim() || category || uploadedFile) {
+      setFormEmpty(false)
+    } else {
+      setFormEmpty(true)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!title?.trim() || !description?.trim() || !category || !uploadedFile) {
+      toast.error("Please fill in all (*) fields before uploading.");
+      return;
+    }
 
     // Create FormData object
     const formData = new FormData();
@@ -78,6 +104,8 @@ export default function Header() {
 
       if (data.success) {
         toast.success(data.message, { id: toastId })
+        handleModelReset()
+        setUploadModel(false)
       }
 
 
@@ -96,7 +124,6 @@ export default function Header() {
       console.error("Upload failed:", error);
     }
   };
-
 
   return (
     <header className="flex flex-col">
@@ -209,11 +236,19 @@ export default function Header() {
               >
                 Profile
               </NavLink>
+              <NavLink
+                onClick={() => setHamb(false)}
+                to="/upload-history"
+                className={linkClasses}
+              >
+                Upload History
+              </NavLink>
               {user.role == 'Faculty' && <button
                 onClick={handleUpload}
-                className={linkClasses + ' border-transparent hover:border-yellow-400'}
+                className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}
               >
                 Upload
+                {!formEmpty && <div className="absolute top-2 -left-1 bg-blue-400 h-2 w-2 rounded-full"></div>}
               </button>}
               <button
                 type="button"
@@ -244,27 +279,31 @@ export default function Header() {
       </div>
       {/* {uploadModel && document.body.className'overflow-hidden'} */}
       {uploadModel &&
-        <div className="fixed inset-0 overflow-y-auto bg-black md:backdrop-blur-sm h-full bg-opacity-40 z-50 flex justify-center items-start md:py-10">
+        <div className="fixed inset-0 overflow-y-auto bg-black md:backdrop-blur-sm h-full bg-opacity-40 z-50 flex justify-center items-start md:py-5">
           <div className="bg-white p-6 md:rounded-2xl shadow-xl md:w-[50%] w-full overflow-y-auto relative">
 
 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="md:text-2xl text-xl font-bold text-gray-800">Upload Study Material</h2>
-              <RxCross2
-                onClick={() => setUploadModel(false)}
-                className="text-gray-600 hover:text-red-500 cursor-pointer md:text-3xl text-2xl"
-              />
+              <div className="flex items-center gap-5">
+                <FiMinimize2 onClick={() => {isFormEmpty(); setUploadModel(false)}} className="text-gray-600 hover:text-red-500 align-middle cursor-pointer text-2xl" />
+
+                <RxCross2
+                  onClick={() => { handleModelReset(); setFormEmpty(true); setUploadModel(false) }}
+                  className="text-gray-600 hover:text-red-500 cursor-pointer md:text-3xl text-2xl"
+                />
+              </div>
             </div>
 
             {/* Form in 2 columns */}
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-1 gap-6 items-center justify-center text-gray-700">
+            <form noValidate ref={formRef} onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-1 gap-6 items-center justify-center text-gray-700">
 
               {/* Left Column */}
               <div className="space-y-6">
                 {/* Title Input */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Title</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Title <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="title"
@@ -278,7 +317,7 @@ export default function Header() {
 
                 {/* Description */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Description</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>
                   <textarea
                     name="description"
                     placeholder="Write a short description..."
@@ -304,7 +343,7 @@ export default function Header() {
 
                 {/* Category */}
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Category</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">Category <span className="text-red-500">*</span></label>
                   <select
                     name="category"
                     className="w-full p-3 rounded-xl border border-gray-300 shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"

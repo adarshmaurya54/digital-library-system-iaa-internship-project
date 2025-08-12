@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact"
 import Profile from "./pages/Profile"
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
+import UploadedMaterails from "./pages/UploadedMaterails";
+import PageNotFound from "./pages/PageNotFound";
 
 const router = createBrowserRouter([
   {
@@ -19,23 +21,16 @@ const router = createBrowserRouter([
       { path:"/about", element: <PublicRoute><About /></PublicRoute>},
       { path:"/contact", element: <PublicRoute><Contact /></PublicRoute> },
       { path:"/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+      { path:"/upload-history", element: <ProtectedRoute><UploadedMaterails /></ProtectedRoute> },
       { path:"/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
       { path: "/login", element: <PublicRoute><Login /></PublicRoute> },
       { path:"/signup", element: <PublicRoute><Signup /></PublicRoute> },
     ],
   },
   {
-    path: "/login",
-    element: <Login />,
+    path: "*",
+    element: <PageNotFound />,
   },
-  {
-    path: "/signup",
-    element: <PublicRoute><Signup /></PublicRoute>,
-  },
-//   {
-//     path: "*",
-//     element: <PageNotFound />,
-//   },
 ]);
 
 export default router;

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import MaterialSerializer
 from rest_framework import status
 from .models import Material
+import os
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -21,4 +22,21 @@ def upload_material(request):
 def get_all_materials(request):
     materials = Material.objects.all()
     serializer = MaterialSerializer(materials, many=True)
-    return Response(serializer.data)
+
+    # Convert serialized data to list so we can modify it
+    materials_data = serializer.data
+
+    for material in materials_data:
+        # Extract file type
+        file_path = material.get("file", "")
+        file_extension = os.path.splitext(file_path)[1].lower().replace('.', '')
+        material["file_type"] = file_extension
+
+        # Convert tags string into sub-object list
+        tags_str = material.get("tags", "")
+        if tags_str:
+            material["tags"] = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
+        else:
+            material["tags"] = []
+
+    return Response(materials_data)
