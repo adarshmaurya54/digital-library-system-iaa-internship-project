@@ -5,8 +5,8 @@ const Profile = () => {
   const { user } = useSelector((state) => state.auth)
   if (!user) return <div className="text-center mt-10">Loading...</div>;
   return (
-    <div className="flex justify-center items-center md:py-5">
-      <div className="bg-white p-8 md:rounded-2xl md:shadow-2xl w-full max-w-md text-center space-y-4">
+    <div className="flex justify-center items-center w-full h-full md:py-5">
+      <div className="bg-white p-8 md:rounded-2xl md:shadow-2xl w-full md:max-w-md h-full flex flex-col justify-center items-center text-center space-y-4">
         <div className="flex justify-center">
           <div className="w-24 h-24 bg-indigo-500 text-white rounded-full flex items-center justify-center text-3xl font-bold">
             {user.first_name[0]}{user.last_name[0]}

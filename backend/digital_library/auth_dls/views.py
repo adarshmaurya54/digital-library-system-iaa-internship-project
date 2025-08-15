@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework.response import Response 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .serializers import UserSerializerWithToken
 from .models import User  # custom user model
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
+from django.utils import timezone
 
 # for sending mails and generate token
 from django.template.loader import render_to_string
@@ -26,45 +27,58 @@ def getRoutes(request):
 def registerUser(request):
     data = request.data
     try:
+        # 1. Validate password match
         if data['password'] != data['cPassword']:
             return Response({
                 "success": False,
                 "message": "Passwords do not match."
             }, status=status.HTTP_400_BAD_REQUEST)
             
+        # 2. Role handling
+        role = data.get('role', 'Trainee')
+        is_active = False  # default
+
+        if role == 'Admin':
+            if request.user.is_superuser:
+                is_active = True  # only superuser can instantly activate Admin
+            else:
+                role = 'Trainee'  # downgrade silently if normal user tries Admin
+
+        # 3. Create user
         user = User.objects.create(
             first_name=data['firstName'],
             last_name=data['lastName'],
             email=data['email'],
-            role=data['role'],
+            role=role,
             password=make_password(data['password']),
-            is_active=False  # default inactive until email verification
+            is_active=is_active
         )
 
-        # generate activation email
-        email_subject = "Activate Your Account"
-        message = render_to_string(
-            "activate.html",
-            {
-                "user": user,
-                "domain": "http://127.0.0.1:8000/",
-                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                "token": generate_token.make_token(user)
-            }
-        )
-        email = EmailMessage(
-            subject=email_subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[user.email]
-        )
-        email.content_subtype = 'html'
-        email.send()
+        # 4. Send activation email for non-admin
+        if not is_active:
+            email_subject = "Activate Your Account"
+            message = render_to_string(
+                "activate.html",
+                {
+                    "user": user,
+                    "domain": "http://127.0.0.1:8000/",
+                    "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                    "token": generate_token.make_token(user)
+                }
+            )
+            email = EmailMessage(
+                subject=email_subject,
+                body=message,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[user.email]
+            )
+            email.content_subtype = 'html'
+            email.send()
 
         serializer = UserSerializerWithToken(user, many=False)
         return Response({
             "success": True,
-            "message": "User registered successfully. Please check your email to activate the account.",
+            "message": "User registered successfully." if is_active else "User registered successfully. Please check your email to activate the account.",
             "user": serializer.data
         })
 
@@ -136,7 +150,16 @@ class ActivateAccountView(View):
 
         if user is not None and generate_token.check_token(user, token):
             user.is_active = True
+            user.verified_email_at = timezone.now()
             user.save()
             return render(request, 'activatesuccess.html')
         else:
             return render(request, 'activatefailed.html')
+
+
+# to get all the user (only admin can access this view)
+@api_view(['GET'])
+@permission_classes([IsAdminUser])  
+def get_all_users(request):
+    users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'role', 'is_active', 'date_joined', 'verified_email_at', 'is_superuser')
+    return Response({'success': True, 'users': users})

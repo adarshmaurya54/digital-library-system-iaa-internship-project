@@ -11,6 +11,8 @@ import Profile from "./pages/Profile"
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
 import UploadedMaterails from "./pages/UploadedMaterails";
 import PageNotFound from "./pages/PageNotFound";
+import AdminApproval from "./pages/AdminApproval";
+import AdminUsers from "./pages/AdminUsers";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
       { path:"/contact", element: <PublicRoute><Contact /></PublicRoute> },
       { path:"/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
       { path:"/upload-history", element: <ProtectedRoute><UploadedMaterails /></ProtectedRoute> },
+      { path:"/manage-users", element: <ProtectedRoute><AdminUsers /></ProtectedRoute> },
+      { path:"/publish", element: <ProtectedRoute><AdminApproval /></ProtectedRoute> },
       { path:"/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
       { path: "/login", element: <PublicRoute><Login /></PublicRoute> },
       { path:"/signup", element: <PublicRoute><Signup /></PublicRoute> },

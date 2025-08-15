@@ -135,7 +135,7 @@ function Login() {
                 </form>
                 <div className="text-sm text-center mt-4">
                     Don't have an account yet?{' '}
-                    <Link to="/signup" className="text-sky-700 hover:underline">Sign up for free!</Link>
+                    <Link to="/signup" className="text-sky-700 hover:underline">Sign up here!</Link>
                 </div>
             </div>
         </div>

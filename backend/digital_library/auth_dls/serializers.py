@@ -16,6 +16,8 @@ class UserSerializerWithToken(serializers.ModelSerializer):
             'role',
             'is_active',
             'isAdmin',
+            'date_joined',
+            'verified_email_at',
             'token',
         ]
 

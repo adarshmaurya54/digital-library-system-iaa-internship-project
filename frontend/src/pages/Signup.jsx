@@ -149,7 +149,7 @@ function Signup() {
                 </form>
                 <div className="text-sm text-center mt-4">
                     Already have an account?{' '}
-                    <Link to="/login" className="text-sky-700 hover:underline">Log in here</Link>
+                    <Link to="/login" className="text-sky-700 hover:underline">Log in here!</Link>
                 </div>
             </div>
         </div>

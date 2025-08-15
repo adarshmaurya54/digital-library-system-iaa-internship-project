@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response   
 from .serializers import MaterialSerializer
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from .models import Material
-import os
+from django.utils import timezone
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -18,25 +19,33 @@ def upload_material(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def get_all_materials(request):
-    materials = Material.objects.all()
+    materials = Material.objects.filter(approval_status='Pending')
     serializer = MaterialSerializer(materials, many=True)
+    return Response(serializer.data)
 
-    # Convert serialized data to list so we can modify it
-    materials_data = serializer.data
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_approved_materials(request):
+    materials = Material.objects.filter(approval_status='Approved')
+    serializer = MaterialSerializer(materials, many=True)
+    return Response(serializer.data)
 
-    for material in materials_data:
-        # Extract file type
-        file_path = material.get("file", "")
-        file_extension = os.path.splitext(file_path)[1].lower().replace('.', '')
-        material["file_type"] = file_extension
+@api_view(["PATCH"])
+@permission_classes([IsAdminUser])
+def approve_item(request, pk):
+    obj = get_object_or_404(Material, pk=pk)
+    obj.approval_status = "Approved" 
+    obj.reviewed_at = timezone.now()
+    obj.save()
+    return Response({'success':True,"message": "Item approved successfully"})
 
-        # Convert tags string into sub-object list
-        tags_str = material.get("tags", "")
-        if tags_str:
-            material["tags"] = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
-        else:
-            material["tags"] = []
-
-    return Response(materials_data)
+@api_view(["PATCH"])
+@permission_classes([IsAdminUser])
+def reject_item(request, pk):
+    obj = get_object_or_404(Material, pk=pk)
+    obj.approval_status = "Rejected" 
+    obj.reviewed_at = timezone.now()
+    obj.save()
+    return Response({'success':True,"message": "Item rejected successfully"})

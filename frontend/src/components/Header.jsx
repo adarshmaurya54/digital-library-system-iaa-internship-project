@@ -125,6 +125,59 @@ export default function Header() {
     }
   };
 
+  // defining the role based navigation
+  const navLinks = {
+    Admin: {
+      left: [
+        { to: "/", label: "Home" },
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/manage-users", label: "Manage Users" },
+        { to: "/publish", label: "Approve & Publish" },
+      ],
+      right: [
+        { to: "/profile", label: "Profile" },
+        { to: "/reports", label: "Reports" },
+      ]
+    },
+    Faculty: {
+      left: [
+        { to: "/", label: "Home" },
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/upload-history", label: "Upload History" },
+        { onClick: handleUpload, label: "Upload", isButton: true }
+      ],
+      right: [
+        { to: "/profile", label: "Profile" },
+      ]
+    },
+    Trainee: {
+      left: [
+        { to: "/", label: "Home" },
+        { to: "/about", label: "About" },
+        { to: "/contact", label: "Contact Us" },
+      ],
+      right: [
+        { to: "/profile", label: "Profile" }
+      ]
+    },
+    Guest: {
+      left: [
+        { to: "/", label: "Home" },
+        { to: "/about", label: "About" },
+        { to: "/contact", label: "Contact Us" },
+      ],
+      right: [
+        { to: "/login", label: "Login" },
+        { to: "/signup", label: "Signup" }
+      ]
+    }
+  };
+
+  // picking the link based on the role
+  const role = user?.role || "Guest";
+  const { left, right } = navLinks[role];
+
+
   return (
     <header className="flex flex-col">
       <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 py-3">
@@ -182,98 +235,39 @@ export default function Header() {
           <LiaTimesSolid onClick={() => setHamb(false)} className="inline cursor-pointer text-2xl" />
         </div>
         <nav className="flex md:flex-row flex-col justify-between md:items-center max-w-7xl mx-auto">
-          {/* Left links */}
+          {/* Left side */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2">
-            {user?.id ? <>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/"
-                className={linkClasses}
-              >
-                Home
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/dashboard"
-                className={linkClasses}
-              >
-                Dashboard
-              </NavLink>
-            </> : <>
-
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/"
-                className={linkClasses}
-              >
-                Home
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/about"
-                className={linkClasses}
-              >
-                About
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/contact"
-                className={linkClasses}
-              >
-                Contact Us
-              </NavLink>
-            </>}
-
+            {left.map((link, i) =>
+              link.isButton ? (
+                <button key={i} onClick={link.onClick} className={linkClasses}>
+                  {link.label}
+                </button>
+              ) : (
+                <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
+                  {link.label}
+                </NavLink>
+              )
+            )}
           </div>
 
-          {/* Right links */}
+          {/* Right side */}
           <div className="flex md:flex-row flex-col md:gap-6 gap-2 mt-2 md:mt-0">
-            {user?.id ? <>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/profile"
-                className={linkClasses}
-              >
-                Profile
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/upload-history"
-                className={linkClasses}
-              >
-                Upload History
-              </NavLink>
-              {user.role == 'Faculty' && <button
-                onClick={handleUpload}
-                className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}
-              >
-                Upload
-                {!formEmpty && <div className="absolute top-2 -left-1 bg-blue-400 h-2 w-2 rounded-full"></div>}
-              </button>}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className={linkClasses + ' border-transparent hover:border-yellow-400'}
-              >
+            {right.map((link, i) =>
+              link.isButton ? (
+                <button key={i} onClick={link.onClick} className={linkClasses}>
+                  {link.label}
+                </button>
+              ) : (
+                <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
+                  {link.label}
+                </NavLink>
+              )
+            )}
+            {user?.id && (
+              <button onClick={handleLogout} className={linkClasses}>
                 Logout
               </button>
-            </> : <>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/login"
-                className={linkClasses}
-              >
-                Login
-              </NavLink>
-              <NavLink
-                onClick={() => setHamb(false)}
-                to="/signup"
-                className={linkClasses}
-              >
-                Signup
-              </NavLink>
-            </>}
-
+            )}
           </div>
         </nav>
       </div>
@@ -287,19 +281,17 @@ export default function Header() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="md:text-2xl text-xl font-bold text-gray-800">Upload Study Material</h2>
               <div className="flex items-center gap-5">
-                <FiMinimize2 onClick={() => {isFormEmpty(); setUploadModel(false)}} className="text-gray-600 hover:text-red-500 align-middle cursor-pointer text-2xl" />
+                <FiMinimize2 title="Minimize" onClick={() => { isFormEmpty(); setUploadModel(false) }} className="text-gray-600 hover:text-blue-300 align-middle cursor-pointer text-2xl" />
 
                 <RxCross2
+                  title="Close"
                   onClick={() => { handleModelReset(); setFormEmpty(true); setUploadModel(false) }}
                   className="text-gray-600 hover:text-red-500 cursor-pointer md:text-3xl text-2xl"
                 />
               </div>
             </div>
 
-            {/* Form in 2 columns */}
             <form noValidate ref={formRef} onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-1 gap-6 items-center justify-center text-gray-700">
-
-              {/* Left Column */}
               <div className="space-y-6">
                 {/* Title Input */}
                 <div>

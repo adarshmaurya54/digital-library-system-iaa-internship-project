@@ -4,5 +4,5 @@ from django.urls import path
 
 
 urlpatterns = [
-    path('', views.getRoutes, name="getRoutes"),
+    path('materials/', views.getFacultyMaterails, name="getFacultyMaterails"),
 ]
