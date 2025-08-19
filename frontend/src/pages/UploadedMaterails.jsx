@@ -8,7 +8,7 @@ function UploadedMaterails() {
   const [materials, setMaterials] = useState()
   const getAllMaterails = async () => {
     try {
-      const { data } = await API('faculty/materials/')
+      const { data } = await API('/faculty/materials/')
       setMaterials(data)
     } catch (e) {
       console.error(e)

@@ -153,8 +153,7 @@ export default function Header() {
     Trainee: {
       left: [
         { to: "/", label: "Home" },
-        { to: "/about", label: "About" },
-        { to: "/contact", label: "Contact Us" },
+        { to: "/dashboard", label: "Dashboard" },
       ],
       right: [
         { to: "/profile", label: "Profile" }
@@ -180,10 +179,10 @@ export default function Header() {
 
   return (
     <header className="flex flex-col">
-      <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 py-3">
+      <div className="bg-gradient-to-r from-[#0257a7] to-[#9bceed] flex justify-between  items-center md:px-10 px-5 md:py-3 py-5">
 
         <div className="flex flex-col md:items-end space-y-3">
-          <div className="flex items-end space-x-3">
+          <Link to='/' className="flex items-end space-x-3">
             <img
               src={img_logo}
               alt="IAA Logo"
@@ -193,11 +192,11 @@ export default function Header() {
               <h1 className="md:text-lg text-sm leading-4 font-semibold">Indian Aviation Academy</h1>
               <p className="md:text-sm text-xs leading-4">Nurturing Aviation for the Future</p>
             </div>
-          </div>
-          <div className="md:hidden flex items-center gap-3 ms-[-2px]">
+          </Link>
+          {/* <div className="md:hidden flex items-center gap-3 ms-[-2px]">
             <MdOutlineLocalLibrary className="inline text-3xl text-white" />
             <p className="capitalize font-semibold text-white">digital library system</p>
-          </div>
+          </div> */}
         </div>
 
         <div onClick={() => setHamb(true)} className="md:hidden flex cursor-pointer">
@@ -231,7 +230,11 @@ export default function Header() {
         </div>
       </div>
       <div className={`bg-white/90 backdrop-blur-md border-l border-gray-200 py-8 md:py-0 z-50 md:z-[unset] fixed md:relative top-0 right-0 md:h-auto h-full w-[80%] ${!hamb ? 'translate-x-full md:translate-x-0' : 'translate-x-0'} transition-transform duration-300 ease-in-out md:w-full shadow-2xl px-6 overflow-y-auto`}>
-        <div className="text-end md:hidden">
+        <div className="flex mb-5 items-center justify-between md:hidden">
+          <div className="md:hidden text-black flex items-center gap-3 ms-[-2px]">
+            <MdOutlineLocalLibrary className="inline text-3xl" />
+            <p className="capitalize font-semibold">digital library system</p>
+          </div>
           <LiaTimesSolid onClick={() => setHamb(false)} className="inline cursor-pointer text-2xl" />
         </div>
         <nav className="flex md:flex-row flex-col justify-between md:items-center max-w-7xl mx-auto">
@@ -239,8 +242,9 @@ export default function Header() {
           <div className="flex md:flex-row flex-col md:gap-6 gap-2">
             {left.map((link, i) =>
               link.isButton ? (
-                <button key={i} onClick={link.onClick} className={linkClasses}>
+                <button key={i} onClick={link.onClick} className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}>
                   {link.label}
+                  {link.label.toLowerCase() === 'upload' && !formEmpty && <div className="absolute top-2 -left-1 bg-blue-400 h-2 w-2 rounded-full"></div>}
                 </button>
               ) : (
                 <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
@@ -254,9 +258,10 @@ export default function Header() {
           <div className="flex md:flex-row flex-col md:gap-6 gap-2 mt-2 md:mt-0">
             {right.map((link, i) =>
               link.isButton ? (
-                <button key={i} onClick={link.onClick} className={linkClasses}>
+                <button key={i} onClick={link.onClick} className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}>
                   {link.label}
                 </button>
+                
               ) : (
                 <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
                   {link.label}
@@ -264,7 +269,7 @@ export default function Header() {
               )
             )}
             {user?.id && (
-              <button onClick={handleLogout} className={linkClasses}>
+              <button onClick={handleLogout} className={linkClasses + ' border-transparent hover:border-yellow-400'}>
                 Logout
               </button>
             )}

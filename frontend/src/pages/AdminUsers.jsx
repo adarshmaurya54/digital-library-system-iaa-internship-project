@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { API } from "../services/apiService";
+import { RxCross2 } from "react-icons/rx";
+import { useSelector } from "react-redux";
 
-/**
- * AdminUsers.jsx
- * Props:
- *  - endpoint (string) optional, default: "/auth/all-users/"
- */
 export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +12,43 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const [active, setActive] = useState("All"); // All | Active | Inactive
   const [sortBy, setSortBy] = useState("date_joined_desc"); // date/name/email
   const [page, setPage] = useState(1);
+  const [updateUserModel, setUpdateUserModel] = useState(false)
   const pageSize = 10;
+  const [user, setUser] = useState(null)
+  
+  const fetchUserById = async(userId) => {
+    try {
+      const {data} = await API.get('/userById/', {userId})
+      if (data.success){
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // form data for the upload form
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    role: user?.role || "Trainee",
+    active: user?.active || true,
+    verified: user?.verified || false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formData)
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -108,6 +141,10 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
     // reset to first page when filters/search change
     setPage(1);
   }, [q, role, active, sortBy]);
+
+  const handleUpdate = (u) => {
+    setUpdateUserModel(true)
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
@@ -230,7 +267,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                 <button
                   type="button"
                   className="px-3 py-1 text-sm rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50"
-                  onClick={() => handleUpdate(u.id)}
+                  onClick={() => handleUpdate(u)}
                 >
                   Update
                 </button>
@@ -242,7 +279,6 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                   Delete
                 </button>
               </div>
-
             </div>
           ))
         )}
@@ -270,6 +306,116 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
           </button>
         </div>
       </div>
+      {/* user update model */}
+      {updateUserModel && <div className="fixed inset-0 overflow-y-auto backdrop-blur-sm bg-black/30 z-50 flex justify-center items-start md:py-10">
+        <div className="bg-white p-6 md:rounded-2xl md:w-[50%] w-full overflow-y-auto relative">
+          {/* Header */}
+          <div className="flex justify-between items-center border-b pb-3 mb-6">
+            <h2 className="md:text-2xl text-xl font-bold text-gray-800">Update user</h2>
+            <RxCross2
+              title="Close"
+              onClick={() => { setUpdateUserModel(false) }}
+              className="text-gray-600 hover:text-red-500 cursor-pointer md:text-3xl text-2xl"
+            />
+          </div>
+
+          {/* Form */}
+          <form noValidate className="grid grid-cols-1 gap-6 text-gray-700">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium">First Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium">Last Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 mt-1"
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                disabled
+                className="w-full border rounded-lg p-2 mt-1 bg-gray-100"
+              />
+            </div>
+
+            {/* Role */}
+            <div>
+              <label className="block text-sm font-medium">Role</label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full border rounded-lg p-2 mt-1"
+              >
+                <option value="Trainee">Trainee</option>
+                <option value="Admin">Admin</option>
+                <option value="Manager">Manager</option>
+                <option value="User">User</option>
+              </select>
+            </div>
+
+            {/* Active */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="active"
+                checked={formData.active}
+                onChange={handleChange}
+                className="h-4 w-4"
+              />
+              <label className="text-sm">Active</label>
+            </div>
+
+            {/* Verified */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="verified"
+                checked={formData.verified}
+                onChange={handleChange}
+                className="h-4 w-4"
+              />
+              <label className="text-sm">Verified</label>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="submit"
+                className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
+              >
+                Upload
+              </button>
+              <button
+                type="reset"
+                onClick={() => setFileData(null)}
+                className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
+              >
+                Reset
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>}
     </div>
   );
 }

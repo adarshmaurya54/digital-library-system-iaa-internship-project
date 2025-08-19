@@ -11,7 +11,7 @@ export const userLogin = createAsyncThunk(
     async (formData, { rejectWithValue }) => {
         const toastId = toast.loading("Please wait...");
         try {
-            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}auth/user/login/`, formData);
+            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}/auth/user/login/`, formData);
             console.log(data.user)
             // storing the token that generated when we request to login api
             if (data.success) {
@@ -47,7 +47,7 @@ export const userRegister = createAsyncThunk(
     ) => {
         const toastId = toast.loading("Please wait...");
         try {
-            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}auth/user/registration/`, {
+            const { data } = await axios.post(`${import.meta.env.VITE_BASEURL}/auth/user/registration/`, {
                 firstName,
                 lastName,
                 email,

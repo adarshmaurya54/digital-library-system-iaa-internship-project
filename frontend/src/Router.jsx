@@ -20,8 +20,8 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home />},
-      { path:"/about", element: <PublicRoute><About /></PublicRoute>},
-      { path:"/contact", element: <PublicRoute><Contact /></PublicRoute> },
+      { path:"/about", element: <About />},
+      { path:"/contact", element: <Contact />},
       { path:"/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
       { path:"/upload-history", element: <ProtectedRoute><UploadedMaterails /></ProtectedRoute> },
       { path:"/manage-users", element: <ProtectedRoute><AdminUsers /></ProtectedRoute> },
