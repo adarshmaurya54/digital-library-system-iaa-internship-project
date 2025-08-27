@@ -41,7 +41,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     date_joined = models.DateTimeField(default=timezone.now)  # auto-set at registration
     verified_email_at = models.DateTimeField(null=True, blank=True)  # set after email verification
-
+    is_removed = models.BooleanField(default=False)
+    
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

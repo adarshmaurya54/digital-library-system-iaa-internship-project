@@ -7,6 +7,10 @@ from .models import User  # custom user model
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django.contrib.auth import get_user_model
+from django.forms.models import model_to_dict
 
 # for sending mails and generate token
 from django.template.loader import render_to_string
@@ -16,6 +20,8 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.views.generic import View
+
+User = get_user_model()
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -112,6 +118,9 @@ def loginUser(request):
         if user is None:
             return Response({'success': False, 'message': 'User not found.'}, status=400)
 
+        if user.is_removed:
+            return Response({'success': False, 'message': 'User were removed.'}, status=400)
+        
         if not user.check_password(password):
             return Response({'success': False, 'message': 'Incorrect password.'}, status=400)
 
@@ -161,5 +170,64 @@ class ActivateAccountView(View):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])  
 def get_all_users(request):
-    users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'role', 'is_active', 'date_joined', 'verified_email_at', 'is_superuser')
+    users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'role', 'is_active', 'date_joined', 'verified_email_at','is_removed', 'is_superuser')
     return Response({'success': True, 'users': users})
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def updateUser(request, pk):
+    data = request.data['data']
+    try:
+        obj = get_object_or_404(User, pk=pk)
+    except Http404:
+        return Response(
+            {'success': False, 'message': 'User not found'},
+            status=404
+        )
+    obj.first_name = data['firstName']
+    obj.last_name = data['lastName']
+    obj.email = data['email']
+    obj.is_active = data['active']
+    obj.role = data['role']
+    obj.save()
+    user = {
+        "id": obj.id,
+        "first_name": obj.first_name,
+        "last_name": obj.last_name,
+        "email": obj.email,
+        "role": obj.role,
+        "is_active": obj.is_active,
+        "date_joined": obj.date_joined,
+        "verified_email_at": obj.verified_email_at,
+        "is_removed": obj.is_removed,
+        "is_superuser": obj.is_superuser,
+    }
+    return Response({'success': True,
+                     "message": "User updated successfully",
+                     'user': user})
+    
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteUser(request, pk):
+    try:
+        obj = get_object_or_404(User, pk=pk)
+    except Http404:
+        return Response(
+            {'success': False, 'message': 'User not found'},
+            status=404
+        )
+    obj.is_removed = True
+    obj.save()
+    user = {
+        "id": obj.id,
+        "first_name": obj.first_name,
+        "last_name": obj.last_name,
+        "email": obj.email,
+        "role": obj.role,
+        "is_active": obj.is_active,
+        "date_joined": obj.date_joined,
+        "verified_email_at": obj.verified_email_at,
+        "is_removed": obj.is_removed,
+        "is_superuser": obj.is_superuser,
+    }
+    return Response({'success': True, 'message': "User removed successfully", 'user': user})

@@ -7,7 +7,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email']  # Customize fields as needed
+        fields = ['id', 'first_name', 'last_name', 'email', 'is_removed']  # Customize fields as needed
 
 class MaterialSerializer(serializers.ModelSerializer):
     faculty = UserSerializer(read_only=True)
@@ -20,7 +20,10 @@ class MaterialSerializer(serializers.ModelSerializer):
         read_only_fields = ['faculty', 'approval_status', 'uploaded_at', 'reviewed_at']
 
     def create(self, validated_data):
+        print(validated_data)
         validated_data['faculty'] = self.context['request'].user
+        if "tags" in self.context['request'].data:
+            validated_data['tags'] = self.context['request'].data.get("tags")
         return super().create(validated_data)
 
     def get_file_type(self, obj):

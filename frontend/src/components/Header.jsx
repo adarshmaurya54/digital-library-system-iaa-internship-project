@@ -133,6 +133,7 @@ export default function Header() {
         { to: "/dashboard", label: "Dashboard" },
         { to: "/manage-users", label: "Manage Users" },
         { to: "/publish", label: "Approve & Publish" },
+        { to: "/approved_rejected", label: "Approved or Rejected" },
       ],
       right: [
         { to: "/profile", label: "Profile" },

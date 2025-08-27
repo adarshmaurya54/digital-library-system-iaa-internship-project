@@ -13,6 +13,7 @@ import UploadedMaterails from "./pages/UploadedMaterails";
 import PageNotFound from "./pages/PageNotFound";
 import AdminApproval from "./pages/AdminApproval";
 import AdminUsers from "./pages/AdminUsers";
+import Approved_Rejected from "./pages/Approved_Rejected";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path:"/manage-users", element: <ProtectedRoute><AdminUsers /></ProtectedRoute> },
       { path:"/publish", element: <ProtectedRoute><AdminApproval /></ProtectedRoute> },
       { path:"/profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+      { path:"/approved_rejected", element: <ProtectedRoute><Approved_Rejected /></ProtectedRoute> },
       { path: "/login", element: <PublicRoute><Login /></PublicRoute> },
       { path:"/signup", element: <PublicRoute><Signup /></PublicRoute> },
     ],

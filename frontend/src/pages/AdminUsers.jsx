@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { API } from "../services/apiService";
 import { RxCross2 } from "react-icons/rx";
-import { useSelector } from "react-redux";
-
+import { toast } from 'react-hot-toast'
+import AlertModal from "../components/AlertModel";
 export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
+  const formRef = useRef(null)
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -14,29 +15,9 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const [page, setPage] = useState(1);
   const [updateUserModel, setUpdateUserModel] = useState(false)
   const pageSize = 10;
-  const [user, setUser] = useState(null)
-  
-  const fetchUserById = async(userId) => {
-    try {
-      const {data} = await API.get('/userById/', {userId})
-      if (data.success){
-        setUser(data.user)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  // form data for the upload form
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    email: user?.email || "",
-    role: user?.role || "Trainee",
-    active: user?.active || true,
-    verified: user?.verified || false,
-  });
-
+  const [formData, setFormData] = useState({});
+  const [alertModel, setAlertModel] = useState(false)
+  const [deletingUserId, setDeletingUserId] = useState(null)
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -45,10 +26,26 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleUpdateFormSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData)
+    const toastId = toast.loading('Updating...')
+    try {
+      const { data } = await API.put(`/auth/user/${formData.id}`, { data: formData })
+      if (data.success) {
+        toast.success(data.message, { id: toastId })
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === data.user.id ? data.user : user
+          )
+        );
+        setUpdateUserModel(false)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Update failed!', { id: toastId });
+    }
   };
+
 
   useEffect(() => {
     let ignore = false;
@@ -81,13 +78,55 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const pill = (ok) =>
     ok
       ? "bg-green-100 text-green-700 border border-green-200"
-      : "bg-rose-100 text-rose-700 border border-rose-200";
+      : "bg-yellow-100 text-yellow-700 border border-yellow-200";
 
   const formatDT = (s) => {
     if (!s) return "—";
     const d = new Date(s);
     if (Number.isNaN(d.getTime())) return s;
     return d.toLocaleString();
+  };
+
+  // generating random color for the user avatar
+
+  const COLORS = [
+    "bg-red-100 text-red-700",
+    "bg-green-100 text-green-700",
+    "bg-yellow-100 text-yellow-700",
+    "bg-purple-100 text-purple-700",
+    "bg-pink-100 text-pink-700",
+    "bg-indigo-100 text-indigo-700",
+    "bg-teal-100 text-teal-700",
+    "bg-orange-100 text-orange-700",
+  ];
+
+  const assignedColors = new Map(); // store user -> color
+  let usedIndexes = new Set();
+
+  const getUniqueColor = (userId) => {
+    // If already assigned, return the same
+    if (assignedColors.has(userId)) return assignedColors.get(userId);
+
+    // Find first unused color
+    let colorIndex;
+    for (let i = 0; i < COLORS.length; i++) {
+      if (!usedIndexes.has(i)) {
+        colorIndex = i;
+        break;
+      }
+    }
+
+    // If palette exhausted, fall back to random HSL
+    if (colorIndex === undefined) {
+      const h = Math.floor(Math.random() * 360);
+      const color = `bg-[hsl(${h},70%,90%)] text-[hsl(${h},80%,30%)]`;
+      assignedColors.set(userId, color);
+      return color;
+    }
+
+    usedIndexes.add(colorIndex);
+    assignedColors.set(userId, COLORS[colorIndex]);
+    return COLORS[colorIndex];
   };
 
   const initials = (u) => {
@@ -108,7 +147,9 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
       const matchRole = role === "All" || (u.role || "") === role;
       const matchActive =
         active === "All" ||
-        (active === "Active" ? !!u.is_active : !u.is_active);
+        (active === "Active" && u.is_active && !u.is_removed) ||
+        (active === "Inactive" && !u.is_active && !u.is_removed) ||
+        (active === "Removed" && u.is_removed);
       return matchQ && matchRole && matchActive;
     });
 
@@ -142,8 +183,35 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
     setPage(1);
   }, [q, role, active, sortBy]);
 
-  const handleUpdate = (u) => {
+  const handleUpdate = (user) => {
+    setFormData({
+      id: user?.id,
+      firstName: user?.first_name || "",
+      lastName: user?.last_name || "",
+      email: user?.email || "",
+      role: user?.role || "",
+      active: user?.is_active,
+    })
     setUpdateUserModel(true)
+  }
+
+  const handleDelete = async () => {
+    const toastId = toast.loading("Deleting...")
+    try {
+      const { data } = await API.delete(`/auth/user/${deletingUserId}/delete/`, { userId: deletingUserId })
+      if (data.success) {
+        toast.success(data.message, { id: toastId })
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === data.user.id ? data.user : user
+          )
+        );
+        setAlertModel(false)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Deletion failed!', { id: toastId });
+    }
   }
 
   return (
@@ -178,9 +246,10 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
           onChange={(e) => setActive(e.target.value)}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="All">All statuses</option>
+          <option value="All">All status</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
+          <option value="Removed">Removed</option>
         </select>
 
         <select
@@ -203,7 +272,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
         <div className="hidden md:grid grid-cols-[repeat(16,minmax(0,1fr))] gap-3 px-5 py-3 text-xs font-semibold text-gray-500 border-b">
           <div className="col-span-4">User</div>
           <div className="col-span-2">Role</div>
-          <div className="col-span-2">Active</div>
+          <div className="col-span-2">Status</div>
           <div className="col-span-2">Joined</div>
           <div className="col-span-2 text-right">Verified</div>
           <div className="col-span-4 text-right">Action</div>
@@ -219,68 +288,84 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
         ) : pageItems.length === 0 ? (
           <div className="p-6 text-gray-600">No users found.</div>
         ) : (
-          pageItems.map((u) => (
-            <div
-              key={u.id}
-              className="grid grid-cols-1 md:grid-cols-[repeat(16,minmax(0,1fr))] gap-4 px-5 py-4 border-b last:border-b-0 hover:bg-gray-50 transition"
-            >
-              {/* user */}
-              <div className="md:col-span-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold">
-                  {initials(u)}
-                </div>
-                <div className="min-w-0">
-                  <div className="font-semibold truncate">
-                    {(u.first_name || "") + " " + (u.last_name || "") || "—"}
+          pageItems.map((u) => {
+            const colorClass = getUniqueColor(u.id || u.email);
+            return (
+              <div
+                key={u.id}
+                className="grid grid-cols-1 md:grid-cols-[repeat(16,minmax(0,1fr))] gap-4 px-5 py-4 border-b last:border-b-0 hover:bg-gray-50 transition"
+              >
+                {/* user */}
+                <div className="md:col-span-4 flex items-center gap-3">
+                  <div className={`h-10 w-10 rounded-full ${colorClass} flex items-center justify-center font-semibold`}>
+                    {initials(u)}
                   </div>
-                  <div className="text-sm text-gray-600 truncate">{u.email}</div>
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">
+                      {(u.first_name || "") + " " + (u.last_name || "") || "—"}
+                    </div>
+                    <div className="text-sm text-gray-600 truncate">{u.email}</div>
+                  </div>
+                </div>
+
+                {/* role */}
+                <div className="md:col-span-2 flex items-center">
+                  <span className="px-2.5 py-1 rounded-full text-xs border bg-gray-100">
+                    {u.role || "—"}
+                  </span>
+                </div>
+
+                {/* active */}
+                <div className="md:col-span-2 flex items-center">
+                  {console.log(u.is_removed)}
+                  {u.is_removed ? <span className={`px-2.5 py-1 rounded-full text-xs bg-rose-100 text-rose-700 border border-rose-200`}>
+                    Removed
+                  </span> : <span className={`px-2.5 py-1 rounded-full text-xs ${pill(!!u.is_active)}`}>
+                    {u.is_active ? "Active" : "Inactive"}
+                  </span>}
+                </div>
+
+                {/* joined */}
+                <div className="md:col-span-2 flex items-center">
+                  <span className="text-sm text-gray-700">{formatDT(u.date_joined)}</span>
+                </div>
+
+                {/* verified */}
+                <div className="md:col-span-2 flex md:justify-end items-center">
+                  <span className={`px-2.5 py-1 rounded-full text-xs ${pill(!!u.verified_email_at)}`}>
+                    {u.verified_email_at ? "Verified" : "Unverified"}
+                  </span>
+                </div>
+                {/* action buttons */}
+                <div className="md:col-span-4 flex md:justify-end items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={u.is_removed}
+                    className={`px-3 py-1 text-sm rounded-lg border border-blue-500 text-blue-600 
+      hover:bg-blue-50 
+      ${u.is_removed ? "opacity-50 cursor-not-allowed hover:bg-transparent" : ""}`}
+                    onClick={() => handleUpdate(u)}
+                  >
+                    Update
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={u.is_removed}
+                    className={`px-3 py-1 text-sm rounded-lg border border-rose-500 text-rose-600 
+      hover:bg-rose-50 
+      ${u.is_removed ? "opacity-50 cursor-not-allowed hover:bg-transparent" : ""}`}
+                    onClick={() => {
+                      setDeletingUserId(u.id);
+                      setAlertModel(true);
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-
-              {/* role */}
-              <div className="md:col-span-2 flex items-center">
-                <span className="px-2.5 py-1 rounded-full text-xs border bg-gray-100">
-                  {u.role || "—"}
-                </span>
-              </div>
-
-              {/* active */}
-              <div className="md:col-span-2 flex items-center">
-                <span className={`px-2.5 py-1 rounded-full text-xs ${pill(!!u.is_active)}`}>
-                  {u.is_active ? "Active" : "Inactive"}
-                </span>
-              </div>
-
-              {/* joined */}
-              <div className="md:col-span-2 flex items-center">
-                <span className="text-sm text-gray-700">{formatDT(u.date_joined)}</span>
-              </div>
-
-              {/* verified */}
-              <div className="md:col-span-2 flex md:justify-end items-center">
-                <span className={`px-2.5 py-1 rounded-full text-xs ${pill(!!u.verified_email_at)}`}>
-                  {u.verified_email_at ? "Verified" : "Unverified"}
-                </span>
-              </div>
-              {/* action buttons */}
-              <div className="md:col-span-4 flex md:justify-end items-center gap-2">
-                <button
-                  type="button"
-                  className="px-3 py-1 text-sm rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50"
-                  onClick={() => handleUpdate(u)}
-                >
-                  Update
-                </button>
-                <button
-                  type="button"
-                  className="px-3 py-1 text-sm rounded-lg border border-rose-500 text-rose-600 hover:bg-rose-50"
-                  onClick={() => handleDelete(u.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -308,7 +393,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
       </div>
       {/* user update model */}
       {updateUserModel && <div className="fixed inset-0 overflow-y-auto backdrop-blur-sm bg-black/30 z-50 flex justify-center items-start md:py-10">
-        <div className="bg-white p-6 md:rounded-2xl md:w-[50%] w-full overflow-y-auto relative">
+        <div className="bg-white p-6 md:rounded-2xl md:w-[50%] md:h-fit h-full w-full overflow-y-auto relative">
           {/* Header */}
           <div className="flex justify-between items-center border-b pb-3 mb-6">
             <h2 className="md:text-2xl text-xl font-bold text-gray-800">Update user</h2>
@@ -320,24 +405,25 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
           </div>
 
           {/* Form */}
-          <form noValidate className="grid grid-cols-1 gap-6 text-gray-700">
+          <form ref={formRef} noValidate onSubmit={handleUpdateFormSubmit} className="grid grid-cols-1 gap-6 text-gray-700">
             {/* Name */}
             <div>
               <label className="block text-sm font-medium">First Name</label>
               <input
                 type="text"
-                name="name"
+                name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 className="w-full border rounded-lg p-2 mt-1"
               />
             </div>
+
             {/* Name */}
             <div>
               <label className="block text-sm font-medium">Last Name</label>
               <input
                 type="text"
-                name="name"
+                name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
                 className="w-full border rounded-lg p-2 mt-1"
@@ -366,35 +452,25 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                 className="w-full border rounded-lg p-2 mt-1"
               >
                 <option value="Trainee">Trainee</option>
+                <option value="Faculty">Faculty</option>
                 <option value="Admin">Admin</option>
-                <option value="Manager">Manager</option>
-                <option value="User">User</option>
               </select>
             </div>
 
             {/* Active */}
             <div className="flex items-center gap-2">
               <input
+                id="name"
                 type="checkbox"
                 name="active"
                 checked={formData.active}
                 onChange={handleChange}
                 className="h-4 w-4"
               />
-              <label className="text-sm">Active</label>
+              <label htmlFor="name" className="text-sm">Active</label>
             </div>
 
-            {/* Verified */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="verified"
-                checked={formData.verified}
-                onChange={handleChange}
-                className="h-4 w-4"
-              />
-              <label className="text-sm">Verified</label>
-            </div>
+
 
             {/* Footer Buttons */}
             <div className="flex items-center justify-center gap-4">
@@ -402,20 +478,26 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                 type="submit"
                 className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
               >
-                Upload
-              </button>
-              <button
-                type="reset"
-                onClick={() => setFileData(null)}
-                className="inline-block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition duration-200"
-              >
-                Reset
+                Update
               </button>
             </div>
           </form>
-
         </div>
       </div>}
+      <AlertModal
+        isOpen={alertModel}
+        onClose={() => setAlertModel(false)}
+        title="Delete User"
+        message={<>
+          Are you sure you want to <span className="text-red-600 font-semibold">delete this user?</span>
+          <br />
+          This action cannot be undone.
+        </>}
+        type="danger"
+        actions={[
+          { label: "Delete", type: "danger", onClick: () => handleDelete() },
+        ]}
+      />
     </div>
   );
 }

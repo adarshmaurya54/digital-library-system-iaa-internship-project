@@ -24,7 +24,7 @@ class Material(models.Model):
     faculty = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    tags = models.CharField(max_length=255, blank=True)
+    tags = models.CharField(max_length=555, blank=True, default="")  
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     file = models.FileField(upload_to='materials/')
     approval_status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
