@@ -14,6 +14,7 @@ import PageNotFound from "./pages/PageNotFound";
 import AdminApproval from "./pages/AdminApproval";
 import AdminUsers from "./pages/AdminUsers";
 import Approved_Rejected from "./pages/Approved_Rejected";
+import ViewMaterial from "./pages/ViewMaterial";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
       { path:"/approved_rejected", element: <ProtectedRoute><Approved_Rejected /></ProtectedRoute> },
       { path: "/login", element: <PublicRoute><Login /></PublicRoute> },
       { path:"/signup", element: <PublicRoute><Signup /></PublicRoute> },
+      { path:"/view", element: <ViewMaterial /> },
     ],
   },
   {

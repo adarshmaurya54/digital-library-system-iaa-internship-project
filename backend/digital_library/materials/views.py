@@ -9,6 +9,9 @@ from .models import Material
 from django.utils import timezone
 from django.http import Http404
 import os
+from django.http import FileResponse, Http404
+from django.conf import settings
+import mimetypes
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -82,3 +85,13 @@ def delete_material(request, pk):
     obj.delete()
 
     return Response({'success': True, 'message': 'Material deleted successfully'})
+
+def serve_material(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(file_path):
+        raise Http404("File not found")
+
+    content_type, _ = mimetypes.guess_type(file_path)
+    response = FileResponse(open(file_path, "rb"), content_type=content_type)
+    response["Content-Disposition"] = f'inline; filename="{os.path.basename(file_path)}"'
+    return response

@@ -119,7 +119,7 @@ def loginUser(request):
             return Response({'success': False, 'message': 'User not found.'}, status=400)
 
         if user.is_removed:
-            return Response({'success': False, 'message': 'User were removed.'}, status=400)
+            return Response({'success': False, 'message': 'User was removed.'}, status=400)
         
         if not user.check_password(password):
             return Response({'success': False, 'message': 'Incorrect password.'}, status=400)
@@ -231,3 +231,16 @@ def deleteUser(request, pk):
         "is_superuser": obj.is_superuser,
     }
     return Response({'success': True, 'message': "User removed successfully", 'user': user})
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteUserRecord(request, pk):
+    try:
+        obj = get_object_or_404(User, pk=pk)
+    except Http404:
+        return Response(
+            {'success': False, 'message': 'User not found'},
+            status=404
+        )
+    obj.delete()
+    return Response({'success': True, 'message': "User's record deleted successfully"})

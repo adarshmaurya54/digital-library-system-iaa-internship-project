@@ -2,3 +2,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Force the DocViewer iframe to take full space */
+#react-doc-viewer iframe {
+  width: 100% !important;
+  height: calc(100vh - 100px) !important;
+}

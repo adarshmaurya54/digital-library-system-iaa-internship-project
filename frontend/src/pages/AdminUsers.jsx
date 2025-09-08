@@ -10,13 +10,14 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
   const [role, setRole] = useState("All");
-  const [active, setActive] = useState("All"); // All | Active | Inactive
+  const [active, setActive] = useState("Active"); // All | Active | Inactive
   const [sortBy, setSortBy] = useState("date_joined_desc"); // date/name/email
   const [page, setPage] = useState(1);
   const [updateUserModel, setUpdateUserModel] = useState(false)
   const pageSize = 10;
   const [formData, setFormData] = useState({});
   const [alertModel, setAlertModel] = useState(false)
+  const [alertModel2, setAlertModel2] = useState(false)
   const [deletingUserId, setDeletingUserId] = useState(null)
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -198,7 +199,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const handleDelete = async () => {
     const toastId = toast.loading("Deleting...")
     try {
-      const { data } = await API.delete(`/auth/user/${deletingUserId}/delete/`, { userId: deletingUserId })
+      const { data } = await API.delete(`/auth/user/${deletingUserId}/delete/`)
       if (data.success) {
         toast.success(data.message, { id: toastId })
         setUsers((prevUsers) =>
@@ -207,6 +208,23 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
           )
         );
         setAlertModel(false)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Deletion failed!', { id: toastId });
+    }
+  }
+
+  const handleDeleteUserRecord = async () => {
+    const toastId = toast.loading("Deleting...")
+    try {
+      const { data } = await API.delete(`/auth/user/${deletingUserId}/delete/record/`)
+      if (data.success) {
+        toast.success(data.message, { id: toastId })
+        setUsers((prevUsers) =>
+          prevUsers.filter((user) => user.id !== deletingUserId)
+        );
+        setAlertModel2(false)
       }
     } catch (error) {
       console.error(error)
@@ -337,13 +355,11 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                   </span>
                 </div>
                 {/* action buttons */}
-                <div className="md:col-span-4 flex md:justify-end items-center gap-2">
+                {!u.is_removed ? (<div className="md:col-span-4 flex md:justify-end items-center gap-2">
                   <button
                     type="button"
-                    disabled={u.is_removed}
                     className={`px-3 py-1 text-sm rounded-lg border border-blue-500 text-blue-600 
-      hover:bg-blue-50 
-      ${u.is_removed ? "opacity-50 cursor-not-allowed hover:bg-transparent" : ""}`}
+      hover:bg-blue-50`}
                     onClick={() => handleUpdate(u)}
                   >
                     Update
@@ -351,10 +367,8 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
 
                   <button
                     type="button"
-                    disabled={u.is_removed}
                     className={`px-3 py-1 text-sm rounded-lg border border-rose-500 text-rose-600 
-      hover:bg-rose-50 
-      ${u.is_removed ? "opacity-50 cursor-not-allowed hover:bg-transparent" : ""}`}
+      hover:bg-rose-50`}
                     onClick={() => {
                       setDeletingUserId(u.id);
                       setAlertModel(true);
@@ -362,7 +376,19 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                   >
                     Delete
                   </button>
-                </div>
+                </div>) : (<div className="md:col-span-4 flex md:justify-end items-center gap-2">
+                  <button
+                    type="button"
+                    className={`px-3 py-1 text-sm rounded-lg border border-rose-500 text-rose-600 
+      hover:bg-rose-50`}
+                    onClick={() => {
+                      setDeletingUserId(u.id);
+                      setAlertModel2(true);
+                    }}
+                  >
+                    Delete User Record
+                  </button>
+                </div>)}
               </div>
             )
           })
@@ -496,6 +522,20 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
         type="danger"
         actions={[
           { label: "Delete", type: "danger", onClick: () => handleDelete() },
+        ]}
+      />
+      <AlertModal
+        isOpen={alertModel2}
+        onClose={() => setAlertModel(false)}
+        title="Delete User Record"
+        message={<>
+          Are you sure you want to <span className="text-red-600 font-semibold">delete this user record?</span>
+          <br />
+          This action cannot be undone.
+        </>}
+        type="danger"
+        actions={[
+          { label: "Delete", type: "danger", onClick: () => handleDeleteUserRecord() },
         ]}
       />
     </div>

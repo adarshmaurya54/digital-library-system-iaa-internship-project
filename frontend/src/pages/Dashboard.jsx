@@ -7,6 +7,7 @@ import AlertModal from "../components/AlertModel";
 import toast from "react-hot-toast";
 import { FaCaretRight } from "react-icons/fa";
 import { FaCaretDown } from "react-icons/fa";
+import ViewMaterial from "./ViewMaterial";
 
 
 export default function Dashboard() {
@@ -21,6 +22,8 @@ export default function Dashboard() {
     const itemsPerPage = 6; // show 6 materials per page
     const navigate = useNavigate()
     const [openFilter, setOpenFilter] = useState(false)
+    const [viewMaterialOpen, setViewMaterialOpen] = useState(false)
+    const [viewMaterialData, setViewMaterialData] = useState({})
 
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting...")
@@ -166,6 +169,12 @@ export default function Dashboard() {
                                         <div key={index} className="bg-white relative p-4 pb-6 rounded-xl border hover:shadow-md hover:scale-105 transition-all duration-500">
                                             <div onClick={() => {
                                                 window.open(`${import.meta.env.VITE_BASEURL}${item.file}`, "_blank");
+                                                // setViewMaterialData([{
+                                                //     uri: `${import.meta.env.VITE_BASEURL}${item.file}`,
+                                                //     fileType: item.file_type,
+                                                //     fileName: item.title,
+                                                // },])
+                                                // setViewMaterialOpen(true)
                                             }} className="flex h-[30%]  cursor-pointer items-center justify-center gap-3 mb-3">
                                                 <div className="text-2xl w-[15%]">{fileIcons[item.file_type] || fileIcons.default}</div>
                                                 <div className="flex-1 w-[85%] text-lg">
@@ -238,6 +247,11 @@ export default function Dashboard() {
                     { label: "Delete", type: "danger", onClick: () => handleDelete() },
                 ]}
             />
+            {viewMaterialOpen && <div className="fixed flex items-center justify-center bg-black/20 backdrop-blur-md top-0 left-0 h-full w-full">
+                <div className="md:w-[90%] rounded-2xl overflow-hidden md:h-[95%] w-full h-full">
+                    <ViewMaterial materialData={viewMaterialData} />
+                </div>
+            </div>}
         </div >
     );
 }

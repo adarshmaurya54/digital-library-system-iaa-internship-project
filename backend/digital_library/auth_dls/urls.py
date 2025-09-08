@@ -11,4 +11,5 @@ urlpatterns = [
     path('activate/<uidb64>/<token>/', views.ActivateAccountView.as_view(), name='activate'),
     path('user/<int:pk>', views.updateUser, name='updateUser'),
     path('user/<int:pk>/delete/', views.deleteUser, name='deleteUser'),
+    path('user/<int:pk>/delete/record/', views.deleteUserRecord, name='deleteUser'),
 ]
