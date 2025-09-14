@@ -38,6 +38,10 @@ function UploadedMaterials() {
 
   return (
     <div className="p-4">
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Uploaded Material History</h1>
+        <p className="text-gray-600">All materials uploaded by you.</p>
+      </div>
       {/* Grid for current page materials */}
       <div className="grid md:grid-cols-3 gap-3">
         {currentMaterials.map((item, index) => {
@@ -89,9 +93,8 @@ function UploadedMaterials() {
 
               {/* Approval status badge */}
               <div
-                className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
-                  statusStyles[item.approval_status] || ""
-                }`}
+                className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${statusStyles[item.approval_status] || ""
+                  }`}
               >
                 {item.approval_status}
               </div>
@@ -110,22 +113,20 @@ function UploadedMaterials() {
             <button
               onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className={`px-3 py-1 rounded-md border ${
-                currentPage === 1
+              className={`px-3 py-1 rounded-md border ${currentPage === 1
                   ? "text-gray-400 border-gray-200"
                   : "hover:bg-gray-100 border-gray-300"
-              }`}
+                }`}
             >
               Prev
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`px-3 py-1 rounded-md border ${
-                currentPage === totalPages
+              className={`px-3 py-1 rounded-md border ${currentPage === totalPages
                   ? "text-gray-400 border-gray-200"
                   : "hover:bg-gray-100 border-gray-300"
-              }`}
+                }`}
             >
               Next
             </button>

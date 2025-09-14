@@ -6,7 +6,7 @@ import img_airports from "../assets/img_airports.png"
 import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { LiaTimesSolid } from "react-icons/lia";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/features/auth/authSlice";
@@ -33,17 +33,26 @@ export default function Header() {
   const [tags, setTags] = useState('')
   const [category, setCategory] = useState('')
   const [formEmpty, setFormEmpty] = useState(true)
+  const [categoriesList, setCategoriesList] = useState([]);
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUploadedFile(file)
+      const maxSize = 10 * 1024 * 1024; // 100 MB in bytes
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 100 MB limit.");
+        e.target.value = ""; // reset file input
+        return;
+      }
+      setUploadedFile(file);
       setFileData({
         name: file.name,
-        size: (file.size / 1024).toFixed(2) + ' KB'
+        size: (file.size / (1024 * 1024)).toFixed(2) + ' MB'
       });
     }
   };
+
   const linkClasses = ({ isActive }) =>
     `relative py-2 w-fit border-b-[3px] transition 
      ${isActive ? "border-yellow-400" : "border-transparent hover:border-yellow-400"}`;
@@ -124,6 +133,25 @@ export default function Header() {
       console.error("Upload failed:", error);
     }
   };
+
+  useEffect(() => {
+    if (uploadModel) {
+      fetchCategories();
+    }
+  }, [uploadModel]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await API.get("materials/categories/");
+      if (data.success) {
+        setCategoriesList(data.categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      toast.error(`Fetch Category: ${error.response.data.detail}`);
+    }
+  };
+
 
   // defining the role based navigation
   const navLinks = {
@@ -262,7 +290,7 @@ export default function Header() {
                 <button key={i} onClick={link.onClick} className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}>
                   {link.label}
                 </button>
-                
+
               ) : (
                 <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
                   {link.label}
@@ -350,14 +378,11 @@ export default function Header() {
                     onChange={(e) => setCategory(e.target.value)}
                   >
                     <option value="">Select Category</option>
-                    <option value="Aerodynamics">Aerodynamics</option>
-                    <option value="Aircraft Systems">Aircraft Systems</option>
-                    <option value="Flight Maneuvers">Flight Maneuvers</option>
-                    <option value="Aviation Weather">Aviation Weather</option>
-                    <option value="Air Law">Air Law</option>
-                    <option value="Navigation">Navigation</option>
-                    <option value="Radio Communication">Radio Communication</option>
-                    <option value="Human Factors">Human Factors</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -371,19 +396,26 @@ export default function Header() {
                       {
                         fileData ? (
                           <div className="text-center">
-                            <p className="text-black font-semibold text-lg">{fileData.name}</p>
+                            <p className="text-black font-semibold text-lg truncate">{fileData.name}</p>
                             <p className="text-gray-500 text-sm">{fileData.size}</p>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center space-y-3 text-center">
-                            <img className="mx-auto h-12 w-12" src="https://www.svgrepo.com/show/357902/image-upload.svg" alt="" />
+                            <img className="mx-auto h-12 w-12" src="https://www.svgrepo.com/show/357902/image-upload.svg" alt="Upload Icon" />
                             <span className="block text-gray-600 font-semibold text-lg group-hover:text-black">
                               Drag & drop your files here
                             </span>
                             <span className="block text-gray-500 font-normal text-sm">
-                              or click to upload a file (.pdf, .docx, .pptx, .mp4)
+                              or click to upload a file.
+                            </span>
+                            <span className="block text-gray-500 font-normal text-sm">
+                              Supported file types: (.pdf, .docx, .pptx, .mp4)
+                            </span>
+                            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full mt-2">
+                              Max file size - 100 MB
                             </span>
                           </div>
+
                         )
                       }
                       <input

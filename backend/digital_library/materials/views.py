@@ -2,10 +2,11 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response   
-from .serializers import MaterialSerializer
+from .serializers import MaterialSerializer, CategorySerializer
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Material
+from .models import Category
 from django.utils import timezone
 from django.http import Http404
 import os
@@ -86,12 +87,26 @@ def delete_material(request, pk):
 
     return Response({'success': True, 'message': 'Material deleted successfully'})
 
-def serve_material(request, path):
-    file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if not os.path.exists(file_path):
-        raise Http404("File not found")
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_categories(request):
+    categories = Category.objects.all()
+    serializer = CategorySerializer(categories, many=True)
+    return Response({'success': True, 'categories': serializer.data})
 
-    content_type, _ = mimetypes.guess_type(file_path)
-    response = FileResponse(open(file_path, "rb"), content_type=content_type)
-    response["Content-Disposition"] = f'inline; filename="{os.path.basename(file_path)}"'
-    return response
+@api_view(['POST'])
+@permission_classes([IsAdminUser]) 
+def add_category(request):
+    serializer = CategorySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'success': True, 'message': 'Category added successfully', 'category': serializer.data}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])  
+def delete_category(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    category.delete()
+    return Response({'success': True, 'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)

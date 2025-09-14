@@ -126,9 +126,6 @@ function Login() {
                             className="w-full h-11 px-3 rounded-xl border border-gray-300 focus:ring-2 ring-[#002F6C] outline-none transition"
                         />
                     </div>
-                    <div className="text-right">
-                        <a href="#" className="text-sm text-sky-700 hover:underline">Forgot your password?</a>
-                    </div>
                     <div className='text-center'>
                         <Button type='submit' text='Login' />
                     </div>
