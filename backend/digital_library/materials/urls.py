@@ -12,4 +12,5 @@ urlpatterns = [
     path("categories/", views.get_all_categories, name="get_all_categories"),
     path('categories/add/', views.add_category, name='add_category'),
     path('categories/<int:pk>/delete/', views.delete_category, name='delete_category'),
+    path('tags/', views.get_unique_tags, name='get_unique_tags'),
 ]

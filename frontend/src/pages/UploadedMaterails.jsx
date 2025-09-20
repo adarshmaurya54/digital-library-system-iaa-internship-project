@@ -74,7 +74,7 @@ function UploadedMaterials() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="font-semibold text-lg truncate">{item.title}</h2>
-                  <p className="text-sm text-gray-500">{item.category}</p>
+                  <p className="text-sm text-gray-500">{item.category?.name}</p>
                 </div>
               </div>
 

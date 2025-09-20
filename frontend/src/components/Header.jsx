@@ -39,9 +39,9 @@ export default function Header() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const maxSize = 10 * 1024 * 1024; // 100 MB in bytes
+      const maxSize = 100 * 1024 * 1024; // 100 MB in bytes
       if (file.size > maxSize) {
-        toast.error("File size exceeds 100 MB limit.");
+        toast.error("File size exceeds, 100MB size limit.");
         e.target.value = ""; // reset file input
         return;
       }
@@ -98,7 +98,7 @@ export default function Header() {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("tags", tags);
-    formData.append("category", category);
+    formData.append("category_id", category);
     formData.append("file", uploadedFile);
 
     const toastId = toast.loading("Uploading...")
@@ -165,7 +165,6 @@ export default function Header() {
       ],
       right: [
         { to: "/profile", label: "Profile" },
-        { to: "/reports", label: "Reports" },
       ]
     },
     Faculty: {
@@ -222,10 +221,6 @@ export default function Header() {
               <p className="md:text-sm text-xs leading-4">Nurturing Aviation for the Future</p>
             </div>
           </Link>
-          {/* <div className="md:hidden flex items-center gap-3 ms-[-2px]">
-            <MdOutlineLocalLibrary className="inline text-3xl text-white" />
-            <p className="capitalize font-semibold text-white">digital library system</p>
-          </div> */}
         </div>
 
         <div onClick={() => setHamb(true)} className="md:hidden flex cursor-pointer">
@@ -271,9 +266,9 @@ export default function Header() {
           <div className="flex md:flex-row flex-col md:gap-6 gap-2">
             {left.map((link, i) =>
               link.isButton ? (
-                <button key={i} onClick={link.onClick} className={linkClasses + ' border-transparent hover:border-yellow-400 relative'}>
+                <button key={i} onClick={link.onClick} className={linkClasses + ' border-transparent hover:border-yellow-400 flex flex-row-reverse items-start gap-[1 px] relative'}>
+                  {link.label.toLowerCase() === 'upload' && !formEmpty && <div className="bg-blue-400 h-2 w-2 rounded-full"></div>}
                   {link.label}
-                  {link.label.toLowerCase() === 'upload' && !formEmpty && <div className="absolute top-2 -left-1 bg-blue-400 h-2 w-2 rounded-full"></div>}
                 </button>
               ) : (
                 <NavLink key={i} to={link.to} onClick={() => setHamb(false)} className={linkClasses}>
@@ -412,7 +407,7 @@ export default function Header() {
                               Supported file types: (.pdf, .docx, .pptx, .mp4)
                             </span>
                             <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full mt-2">
-                              Max file size - 100 MB
+                              Max file size - 10 MB
                             </span>
                           </div>
 

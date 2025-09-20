@@ -20,7 +20,7 @@ def upload_material(request):
     serializer = MaterialSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         serializer.save()
-        return Response({'success': True, 'message': 'Material uploaded successfully', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'success': True, 'message': 'Material uploaded and sent for admin approval', 'data': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -110,3 +110,18 @@ def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
     category.delete()
     return Response({'success': True, 'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
+
+#view to get unique tags from the materials
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_unique_tags(request):
+    all_tags = []
+
+    for material in Material.objects.all():
+        if material.tags:
+            tags_list = [tag.strip() for tag in material.tags.split(",")]
+            all_tags.extend(tags_list)
+
+    unique_tags = sorted(set(all_tags))
+
+    return Response({"tags": unique_tags})

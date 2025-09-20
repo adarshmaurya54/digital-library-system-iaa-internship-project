@@ -3,6 +3,7 @@ import { API } from "../services/apiService";
 import { RxCross2 } from "react-icons/rx";
 import { toast } from 'react-hot-toast'
 import AlertModal from "../components/AlertModel";
+import { useSelector } from "react-redux";
 export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const formRef = useRef(null)
   const [users, setUsers] = useState([]);
@@ -19,6 +20,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
   const [alertModel, setAlertModel] = useState(false)
   const [alertModel2, setAlertModel2] = useState(false)
   const [deletingUserId, setDeletingUserId] = useState(null)
+  const [currentUpdatingUser, setCurrentUpdatingUser] = useState('')
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -26,6 +28,7 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+
 
   const handleUpdateFormSubmit = async (e) => {
     e.preventDefault();
@@ -335,7 +338,6 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
 
                 {/* active */}
                 <div className="md:col-span-2 flex items-center">
-                  {console.log(u.is_removed)}
                   {u.is_removed ? <span className={`px-2.5 py-1 rounded-full text-xs bg-rose-100 text-rose-700 border border-rose-200`}>
                     Removed
                   </span> : <span className={`px-2.5 py-1 rounded-full text-xs ${pill(!!u.is_active)}`}>
@@ -360,12 +362,12 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                     type="button"
                     className={`px-3 py-1 text-sm rounded-lg border border-blue-500 text-blue-600 
       hover:bg-blue-50`}
-                    onClick={() => handleUpdate(u)}
+                    onClick={() => {handleUpdate(u); setCurrentUpdatingUser(u)}}
                   >
                     Update
                   </button>
 
-                  <button
+                  {u.role !== 'Admin' && <button
                     type="button"
                     className={`px-3 py-1 text-sm rounded-lg border border-rose-500 text-rose-600 
       hover:bg-rose-50`}
@@ -375,7 +377,16 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
                     }}
                   >
                     Delete
-                  </button>
+                  </button>}
+
+                  {u.role === 'Admin' && <button
+                    type="button"
+                    disabled={true}
+                    title="You can't delete admin user."
+                    className={`px-3 py-1 text-sm rounded-lg border border-rose-300 text-rose-300`}
+                  >
+                    Delete
+                  </button>}
                 </div>) : (<div className="md:col-span-4 flex md:justify-end items-center gap-2">
                   <button
                     type="button"
@@ -469,7 +480,8 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
             </div>
 
             {/* Role */}
-            <div>
+            
+            {currentUpdatingUser?.role !== 'Admin' && <> <div>
               <label className="block text-sm font-medium">Role</label>
               <select
                 name="role"
@@ -479,22 +491,22 @@ export default function AdminUsers({ endpoint = "/auth/all-users/" }) {
               >
                 <option value="Trainee">Trainee</option>
                 <option value="Faculty">Faculty</option>
-                <option value="Admin">Admin</option>
               </select>
             </div>
-
-            {/* Active */}
-            <div className="flex items-center gap-2">
-              <input
-                id="name"
-                type="checkbox"
-                name="active"
-                checked={formData.active}
-                onChange={handleChange}
-                className="h-4 w-4"
-              />
-              <label htmlFor="name" className="text-sm">Active</label>
-            </div>
+              {/* Active */}
+              <div className="flex items-center gap-2">
+                <input
+                  id="name"
+                  type="checkbox"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="name" className="text-sm">Active</label>
+              </div>
+            </>
+            }
 
 
 

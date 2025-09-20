@@ -19,7 +19,14 @@ class MaterialSerializer(serializers.ModelSerializer):
     faculty = UserSerializer(read_only=True)
     file_type = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-    category = CategorySerializer(read_only=True)  # Use this nested serializer
+
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        source="category",
+        write_only=True
+    )
+
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Material
@@ -41,5 +48,3 @@ class MaterialSerializer(serializers.ModelSerializer):
         if obj.tags:
             return [tag.strip() for tag in obj.tags.split(",") if tag.strip()]
         return []
-
-    

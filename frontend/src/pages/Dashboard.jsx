@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Funnel, FileText, Video, ClipboardList, File } from "lucide-react";
 import { useSelector } from "react-redux";
 import { API } from "../services/apiService";
-import { useNavigate } from "react-router-dom";
 import AlertModal from "../components/AlertModel";
 import toast from "react-hot-toast";
 import { FaCaretRight } from "react-icons/fa";
 import { FaCaretDown } from "react-icons/fa";
-import ViewMaterial from "./ViewMaterial";
 import { RxCross2 } from "react-icons/rx";
 import ViewCategories from "./ViewCategories";
 
@@ -16,6 +14,7 @@ export default function Dashboard() {
     const [dateFilter, setDateFilter] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
+    const [tagsFilter, setTagsFilter] = useState("");
     const [dateFilterLabel, setDateFilterLabel] = useState("All Time");
     const { user } = useSelector(state => state.auth)
     const [alertModel, setAlertModel] = useState(false);
@@ -27,6 +26,7 @@ export default function Dashboard() {
     const [openAddCategory, setOpenAddCategory] = useState(false)
     const [openViewCategories, setOpenViewCategories] = useState(false);
     const [newCategory, setNewCategory] = useState('')
+    const [uniqueTags, setUniqueTags] = useState([])
 
     const handleDelete = async () => {
         const toastId = toast.loading("Deleting...")
@@ -53,6 +53,15 @@ export default function Dashboard() {
     }
     useEffect(() => {
         getAllMaterials()
+        const getUniqueTags = async () => {
+            try {
+                const { data } = await API.get("materials/tags/")
+                setUniqueTags(data.tags)
+            } catch (error) {
+                console.error(e)
+            }
+        }
+        getUniqueTags();
     }, [])
 
     const approvedMaterials = materials?.filter(item => item.approval_status === "Approved") || [];
@@ -62,10 +71,12 @@ export default function Dashboard() {
         const matchesSearch = (
             item.title.toLowerCase().includes(query) ||
             item.description.toLowerCase().includes(query) ||
-            item.category.toLowerCase().includes(query)
+            item.category.name.toLowerCase().includes(query) ||
+            item.tags.includes(query)
         );
 
         const matchesType = typeFilter ? item.file_type === typeFilter : true;
+        const matchesTags = tagsFilter ? item.tags.includes(tagsFilter) : true;
 
         const matchesDate = (() => {
             if (dateFilter === "all") return true;
@@ -86,7 +97,7 @@ export default function Dashboard() {
             return true;
         })();
 
-        return matchesSearch && matchesType && matchesDate;
+        return matchesSearch && matchesType && matchesDate && matchesTags;
     });
 
 
@@ -158,22 +169,24 @@ export default function Dashboard() {
     return (
         <div className="flex md:flex-row flex-col">
             {/* Sidebar */}
-            <aside className="md:w-64 bg-white md:min-h-screen shadow-md p-4">
+            <aside className="md:w-64 bg-white md:min-h-screen p-4">
                 <div className="border-b font-semibold pb-3 mb-6 text-sm text-nowrap md:block hidden">
                     <p>Welcome, {user?.first_name + " " + user?.last_name}!</p>
                 </div>
                 <div className="space-y-3">
                     {/* Filter Toggle Button - ONLY visible on small screens */}
-                    <div className="flex md:hidden justify-between w-full cursor-pointer px-4 py-2 rounded-full text-md items-center gap-2 font-medium mb-2 bg-gray-100">
+                    <div className="flex md:justify-center justify-between w-full md:cursor-auto cursor-pointer px-4 md:py-0 py-2 rounded-xl text-md items-center gap-2 font-medium mb-2 md:bg-transparent bg-gray-100">
                         <div className="flex items-center gap-2">
                             <Funnel className="w-5 h-5 text-[#0257a7]" />
                             <span>Filters</span>
                         </div>
-                        {openFilter ? (
-                            <FaCaretDown onClick={() => setOpenFilter(false)} className="w-5 h-5" />
-                        ) : (
-                            <FaCaretRight onClick={() => setOpenFilter(true)} className="w-5 h-5" />
-                        )}
+                        <div className="inline-block md:hidden">
+                            {openFilter ? (
+                                <FaCaretDown onClick={() => setOpenFilter(false)} className="w-5 h-5" />
+                            ) : (
+                                <FaCaretRight onClick={() => setOpenFilter(true)} className="w-5 h-5" />
+                            )}
+                        </div>
                     </div>
 
                     {/* Filter Section */}
@@ -228,6 +241,26 @@ export default function Dashboard() {
                                     <option>Past Month</option>
                                 </select>
                             </div>
+
+                            {/* Type Filter */}
+                            <div className="flex flex-col w-full">
+                                <label htmlFor="typeFilter" className="text-sm font-medium text-blue-900 mb-1">
+                                    Tags
+                                </label>
+                                <select
+                                    id="tagsFilter"
+                                    value={tagsFilter}
+                                    onChange={(e) => setTagsFilter(e.target.value)}
+                                    className="w-full rounded-xl capitalize border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm"
+                                >
+                                    <option value="">All Types</option>
+                                    {uniqueTags.map((tag, index) => (
+                                        <option key={index} value={tag}>
+                                            {tag}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -253,7 +286,7 @@ export default function Dashboard() {
                         <Search className="w-5 h-5 text-gray-500" />
                         <input
                             type="text"
-                            placeholder="Search by catergory, discription and title"
+                            placeholder="Search by catergory, discription, tags and title"
                             className="flex-1 placeholder:text-sm outline-none bg-transparent"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -282,7 +315,7 @@ export default function Dashboard() {
                                                 <div className="text-2xl w-[15%]">{fileIcons[item.file_type] || fileIcons.default}</div>
                                                 <div className="flex-1 w-[85%] text-lg">
                                                     <h2 className="font-semibold text-lg truncate">{item.title}</h2>
-                                                    <p className="text-sm text-gray-500">{item.category.name} · <span className="text-gray-400">{formatTimeAgo(item.uploaded_at)}</span></p>
+                                                    <p className="text-sm text-gray-500">{item.category?.name} · <span className="text-gray-400">{formatTimeAgo(item.uploaded_at)}</span></p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-start justify-between h-[70%]">
